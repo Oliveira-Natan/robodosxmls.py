@@ -9,14 +9,14 @@ from email.mime.text import MIMEText
 import pandas as pd
 
 start = datetime.now()
-def uploadingReport(action_list, reportrobodosemails):
-    robo_data = pd.read_csv(path_report + reportrobodosemails)
+def uploadingReport(action_list, reportrobodosemailsarquivei):
+    robo_data = pd.read_csv(path_report + reportrobodosemailsarquivei)
 
     # appending action to reportdosrobos
     action_list = pd.Series(action_list, index=robo_data.columns)
     robo_data = robo_data.append(action_list, ignore_index=True)
-    robo_data.to_csv(path_report + reportrobodosemails, index=False)
-    robo_data = pd.read_csv(path_report + reportrobodosemails)
+    robo_data.to_csv(path_report + reportrobodosemailsarquivei, index=False)
+    robo_data = pd.read_csv(path_report + reportrobodosemailsarquivei)
 
 def uploadingReportError(action_list, reportdosrobos_erros):
     robo_data_error = pd.read_csv(path_report + reportdosrobos_erros)  # lendo o csv de erros no formato de df
@@ -72,7 +72,7 @@ def enviarEmail(file, path_temp_individualizado, sender_email, receiver_email, p
         print('enviado por email: ', file_base_name)
 
         # movendo arquivo enviado de individualizado para enviados
-        shutil.move(path_temp_unificado_and_filename, os.path.join(path_temp_individualizados_enviados, file))
+        shutil.move(path_temp_unificado_and_filename, os.path.join(path_temp_individualizados_enviados_arquivei, file))
 
 def enviarEmaildeNovosarquivos(lista_de_xmls_enviados, sender_email, analista_de_retenção_email, password):
     port = 587  # For SSL
@@ -80,17 +80,17 @@ def enviarEmaildeNovosarquivos(lista_de_xmls_enviados, sender_email, analista_de
     message = MIMEMultipart("alternative")
     message["From"] = sender_email
     message["To"] = analista_de_retenção_email
-    message["Subject"] = "Novos XMLs no CloudFiscal"
+    message["Subject"] = "Novos PDF's enviados Arquivei"
 
     # Create the plain-text of your message
     quantidade_de_xmls_enviados = len(lista_de_xmls_enviados)
     user = analista_de_retenção_email.split('.')[0].capitalize()
 
     body = "Olá, {}.".format(user) + \
-           ("\n\nO seguinte XML acabou de ser enviado para o CloudFiscal:\n\n"
+           ("\n\nO seguinte XML acabou de ser enviado para a Arquivei:\n\n"
             if quantidade_de_xmls_enviados <= 1
             else
-            "\n\n{} XMLs acabaram de ser enviados para o CloudFiscal e seus nomes são:\n\n".format(
+            "\n\n{} XMLs acabaram de ser enviados para a Arquivei e seus nomes são:\n\n".format(
                 quantidade_de_xmls_enviados)) + \
            "".join(str(xml_enviado) + '\n' for xml_enviado in lista_de_xmls_enviados) + \
            "\nAtenciosamente, \nRobodosEmails \nSquad de Inovação"
@@ -110,7 +110,7 @@ def enviarEmaildeNovosarquivos(lista_de_xmls_enviados, sender_email, analista_de
         server.login(sender_email, password)
         server.sendmail(sender_email, analista_de_retenção_email, message.as_string())
 
-    return 'Upload para o CloudFiscal informado ao analista de retenção'
+    return 'Upload para a Arquivei informado ao analista de retenção'
 
 
 # defining year, month and day
@@ -140,6 +140,7 @@ path_report = r"F:\robodepdfs\reports"
 path_temp_original = r'F:\robodepdfs\temp_original'
 path_temp_individualizados = r'F:\robodepdfs\temp_individualizados'
 path_temp_individualizados_enviados = r'F:\robodepdfs\temp_individualizados_enviados'
+path_temp_individualizados_enviados_arquivei = r'F:\robodepdfs\temp_individualizados_enviados_arquivei'
 path_arquivei = r'F:\Fiscal\Clientes Fiscal\Arquivei - Armazenamento de XML'
 path_cloudFiscal = r'F:\Impostos Retidos\Conversor FIT'
 
@@ -148,6 +149,7 @@ reportrobodeindividualizacao = '\\robodeindividualizacao_' + str(currentYear) + 
 reportdosrobos_erros = '\\errosdosrobos_' + str(currentYear) + '_' + str(currentMonth) + '.csv'
 reportrobodospdfs = '\\robodospdfs_' + str(currentYear) + '_' + str(currentMonth) + '.csv'
 reportrobodosemails = '\\robodosemails_' + str(currentYear) + '_' + str(currentMonth) + '.csv'
+reportrobodosemailsarquivei = '\\robodosemailsarquivei_' + str(currentYear) + '_' + str(currentMonth) + '.csv'
 reportrobodoarquivei = '\\robodoarquivei_' + str(currentYear) + '_' + str(currentMonth) + '.csv'
 
 # sender_email = "impostosretidos@mcsmarkup.com.br"
@@ -156,7 +158,7 @@ reportrobodoarquivei = '\\robodoarquivei_' + str(currentYear) + '_' + str(curren
 sender_email = "mcstools.resumocfop@outlook.com"
 password = "markuptools@2021"
 
-receiver_email = "nfse@cloudfiscal.com"
+receiver_email = "mcsmarkup@ocr.arquivei.com.br"
 
 analista_de_retenção_email = "natan.oliveira@mcsmarkup.com.br"
 
@@ -185,9 +187,9 @@ if len(os.listdir(path_temp_individualizados)) != 0:
     for file in os.listdir(path_temp_individualizados):
         # try:
         enviarEmail(file, path_temp_individualizados, sender_email, receiver_email, password)
-        action_list = [datetime.now(), 'robodosemails', 'temp_individualizados to temp_individualizados_enviados',
+        action_list = [datetime.now(), 'robodosemailsparaarquivei', 'temp_individualizados to temp_individualizados_enviados_arquivei',
                        path_temp_individualizados + "\\" + file]
-        uploadingReport(action_list, reportrobodosemails)
+        uploadingReport(action_list, reportrobodosemailsarquivei)
         print('Report do Robo dos Emails atualizado com sucesso')
         lista_de_xmls_enviados.append(file)
         # except:
