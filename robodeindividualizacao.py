@@ -25,11 +25,11 @@ def uploadingReportError(action_list, reportdosrobos_erros):
 
 def individualizacao(file_in_original):
     # for file_in_original in os.listdir(path_temp_original):  # on for each file on temp_original
-    if file_in_original.endswith(".pdf"):  # if file ends with .pdf
+    if file_in_original.endswith(".PDF"):  # if file ends with .pdf
         path_original_and_filename = os.path.join(path_temp_original, file_in_original)  # creating file path
         with open(path_original_and_filename, 'rb') as pdf_file:  # read file as pdf_file
             try:
-                number_of_pages = PdfFileReader(pdf_file).getNumPages()  # get number of pages from pdf
+                number_of_pages = PdfFileReader(pdf_file, strict=False).getNumPages()  # get number of pages from pdf
             except:
                 pdf_file.close()  # closing file and adjusting file with EOF error
 
@@ -59,7 +59,7 @@ def individualizacao(file_in_original):
 
             if number_of_pages > 1:  # if more than 01 page, then try to split and delete original from temp_original
 
-                file_base_name = file_in_original.replace('.pdf', '')  # getting pdf name
+                file_base_name = file_in_original.replace('.PDF', '')  # getting pdf name
                 pdf = PdfFileReader(path_original_and_filename)
                 for page_number in range(pdf.getNumPages()):  # for each page of this pdf
                     pdfWriter = PdfFileWriter()
@@ -133,24 +133,25 @@ reportrobodosemails = '\\robodosemails_' + str(currentYear) + '_' + str(currentM
 reportrobodoarquivei = '\\robodoarquivei_' + str(currentYear) + '_' + str(currentMonth) + '.csv'
 
 # start process
-try:
-    if len(os.listdir(path_temp_original)) != 0:
-        for file in os.listdir(path_temp_original):  # on for each file on temp_original
-            try:
-                individualizacao(file)
-                action_list = [datetime.now(), 'robodeindividualizacao', 'temp_original to temp_individualizados', path_temp_original + "\\" + file]
-                uploadingReport(action_list, reportrobodeindividualizacao)
-                print('Report do Robo de Individualizacao atualizado com sucesso')
-            except:
-                action_list = [datetime.now(), 'robodeindividualizacao', 'ERROR: temp_original to temp_individualizados', path_temp_original + "\\" + file]
-                uploadingReportError(action_list, reportdosrobos_erros)
-                print('ERROR: Report de erro dos robos atualizado com sucesso')
-    else:
-        print('Não há arquivos novos a serem copiados')
-except:
-    action_list = [datetime.now(), 'robodeindividualizacao', 'ERROR: problemas ao processar o robo de individualizacao', path_temp_individualizados]
-    uploadingReportError(action_list, reportdosrobos_erros)
-    print('ERROR: Report de erro dos robos atualizado com sucesso (problemas ao processar o robo de individualizacao)')
 
-end = datetime.now()
-print(end-start)
+if len(os.listdir(path_temp_original)) != 0:
+    for file in os.listdir(path_temp_original):  # on for each file on temp_original
+        print(file)
+        individualizacao(file)
+        action_list = [datetime.now(), 'robodeindividualizacao', 'temp_original to temp_individualizados',
+                       path_temp_original + "\\" + file]
+        uploadingReport(action_list, reportrobodeindividualizacao)
+        print('Report do Robo de Individualizacao atualizado com sucesso')
+#             except:
+#                 action_list = [datetime.now(), 'robodeindividualizacao', 'ERROR: temp_original to temp_individualizados', path_temp_original + "\\" + file]
+#                 uploadingReportError(action_list, reportdosrobos_erros)
+#                 print('ERROR: Report de erro dos robos atualizado com sucesso')
+#     else:
+#         print('Não há arquivos novos a serem copiados')
+# except:
+#     action_list = [datetime.now(), 'robodeindividualizacao', 'ERROR: problemas ao processar o robo de individualizacao', path_temp_individualizados]
+#     uploadingReportError(action_list, reportdosrobos_erros)
+#     print('ERROR: Report de erro dos robos atualizado com sucesso (problemas ao processar o robo de individualizacao)')
+#
+# end = datetime.now()
+# print(end-start)
