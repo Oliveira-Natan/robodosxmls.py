@@ -1,3 +1,4 @@
+# -*- encoding: utf-8 -*-
 import os.path
 import shutil
 from datetime import datetime
@@ -25,22 +26,28 @@ def uploadingReportError(action_list, reportdosrobos_erros):
 def filestocopy(path_centraldenotas, path_report, reportrobodospdfs):
     df = pd.read_csv(path_report + reportrobodospdfs)
     list_of_path_file_reportrobodospdfs = df['path'].to_list()
+    print('lista de arquivos no report do mes solicitado: ', list_of_path_file_reportrobodospdfs)
+    print('total de arquivos no report: ', len(list_of_path_file_reportrobodospdfs))
 
     # listing files path on CentraldeNotas
+    print('Iniciando listagem de arquivos na Central do mes solicitado')
     list_of_path_of_files_centraldenotas = []
     path_centraldenotas_year = path_centraldenotas + '\\' + str(currentYear)  # ..\CentraldeNotas\\2021\\Empresa01\\08'
+
+    # for currentMonth in range(1,13):
     paths_centraldenotas = [f.path + '\\' + str(currentMonth) for f in os.scandir(path_centraldenotas_year) if f.is_dir()]  # listing folders names with current month
     for path_centraldenotas in paths_centraldenotas:  # accessing each folder on CentraldeNotas
         for root, dirs, files in os.walk(path_centraldenotas):
             for file in files:
                 list_of_path_of_files_centraldenotas.append(os.path.join(root, file))
-    print(len(list_of_path_of_files_centraldenotas))
-    print(len(list_of_path_file_reportrobodospdfs))
-    print(list_of_path_file_reportrobodospdfs)
+                # print('listando arquivos da central', root, file)
+    print('lista de arquivos na central do mes solicitado: ', list_of_path_of_files_centraldenotas)
+    print('total de arquivos na central: ', len(list_of_path_of_files_centraldenotas))
+    # print(list_of_path_file_reportrobodospdfs)
 
     path_files_to_copy = [value for value in list_of_path_of_files_centraldenotas if value not in list_of_path_file_reportrobodospdfs]
-    print(len(path_files_to_copy))
-    print(path_files_to_copy)
+    print('lista de arquivos para copiar do mes solicitado', path_files_to_copy)
+    print('total de arquivos para copiar: ', len(path_files_to_copy))
     return path_files_to_copy
 
 def copyingFiles(list_filestocopy):
@@ -79,22 +86,25 @@ reportrobodosemails = '\\robodosemails_' + str(currentYear) + '_' + str(currentM
 reportrobodoarquivei = '\\robodoarquivei_' + str(currentYear) + '_' + str(currentMonth) + '.csv'
 
 # start process
+
 try:
     list_filestocopy = filestocopy(path_centraldenotas, path_report, reportrobodospdfs)
     if len(list_filestocopy) != 0:
-        print(len(list_filestocopy))
+        # print(len(list_filestocopy))
         for file_in_centraldenotas in list_filestocopy:  # for each file to copy from CentraldeNotas to temp_original
             print('nome do arquivo', file_in_centraldenotas)
-            if file_in_centraldenotas.endswith(".PDF"):
-                try:
-                    copyingFiles(file_in_centraldenotas)
-                    action_list = [datetime.now(), 'robodospdfs', 'centraldenotas to temp_original', file_in_centraldenotas]
-                    uploadingReport(action_list, reportrobodospdfs)
-                    print('Report do Robo dos Pdfs atualizado com sucesso')
-                except:
-                    action_list = [datetime.now(), 'robodospdfs', 'ERROR: centraldenotas to temp_original', file_in_centraldenotas]
-                    uploadingReportError(action_list, reportdosrobos_erros)
-                    print('ERROR: Report de erro dos robos atualizado com sucesso')
+            extentions = [".PDF", ".pdf", ".Pdf"]
+            for extention in extentions:
+                if file_in_centraldenotas.endswith(extention):
+                    try:
+                        copyingFiles(file_in_centraldenotas)
+                        action_list = [datetime.now(), 'robodospdfs', 'centraldenotas to temp_original', file_in_centraldenotas]
+                        uploadingReport(action_list, reportrobodospdfs)
+                        print('Report do Robo dos Pdfs atualizado com sucesso')
+                    except:
+                        action_list = [datetime.now(), 'robodospdfs', 'ERROR: centraldenotas to temp_original', file_in_centraldenotas]
+                        uploadingReportError(action_list, reportdosrobos_erros)
+                        print('ERROR: Report de erro dos robos atualizado com sucesso')
     else:
         print('Não há arquivos novos a serem copiados')
 except:

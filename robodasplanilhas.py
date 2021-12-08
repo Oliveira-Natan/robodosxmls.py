@@ -38,6 +38,7 @@ filename_novo = sg.popup_get_file('Agora, escolha o planilhão, com os dados mai
 df2 = pd.read_excel(filename_novo, dtype=object)
 
 # montar lista com path e nome da empresa
+atualizadas = []
 for files in files_path:
     try:
         df_2_parcial = df2.iloc[:, 0:27]
@@ -67,6 +68,37 @@ for files in files_path:
         # df_1_parcial.update(df_2_parcial)
         print('planilha antiga: ', len(df_1_parcial))
 
+        list_to_clean = [0,
+                         1,
+                         2,
+                         4,
+                         6,
+                         7,
+                         8,
+                         9,
+                         10,
+                         11,
+                         12,
+                         13,
+                         14,
+                         15,
+                         16,
+                         17,
+                         18,
+                         19,
+                         20,
+                         21,
+                         22,
+                         23,
+                         24,
+                         25,
+                         26,
+                         27,
+                         ]
+        for n in list_to_clean:
+            df1[df1[df1.iloc[:, [n]].columns[0]].name] = df1[df1.iloc[:, [n]].columns[0] != None] = None
+            df1 = df1.drop([df1[df1.iloc[:, [-1]].columns[0]].name], axis=1)
+
         a = df1.set_index(['Número Nota Fiscal', 'CNPJ Prestador'])  # antiga
         b = df_2_parcial.set_index(['Número Nota Fiscal', 'CNPJ Prestador'])  # planilhao
 
@@ -78,8 +110,15 @@ for files in files_path:
         # df_de_dados_novos.to_excel('novos.xlsx', index=False, header=True, encoding='utf-8-sig')
 
         print('quantidade de dados novos no cliente ', client_name, ': ', (len(b) - len(a)))
+        amount_atualizadas = (len(b) - len(a))
+        atualizadas.append([client_name, amount_atualizadas, 'atualizada'])
         if (len(b) - len(a)) != 0:
-    #         df_de_dados_novos = df_de_dados_novos.loc[df_de_dados_novos.duplicated([df_de_dados_novos.iloc[:, [3]].columns[0],
+            # new_filename = client_name + ' - atualizada em ' + today.strftime("%d-%m-%Y_%H-%M-%S")
+            new_filename = client_name
+            final_directory = str(directory_to_save) + new_filename + '.xlsx'
+            df_de_dados_novos.to_excel(final_directory, index=False, header=True, encoding='utf-8-sig')
+
+        #         df_de_dados_novos = df_de_dados_novos.loc[df_de_dados_novos.duplicated([df_de_dados_novos.iloc[:, [3]].columns[0],
     #                                                                                 df_de_dados_novos.iloc[:, [1]].columns[0],
     #                                                                                 df_de_dados_novos.iloc[:, [5]].columns[0]
     #                                                                                 ], keep="first")]  # deixando apenas o que veio do df_2_parcial a partir da coluna do numero da nfse
@@ -88,16 +127,16 @@ for files in files_path:
     #         # incluindo df_de_dados_novos no df1 como df_final
     #         df_final = pd.concat([df1, df_de_dados_novos])
     #
-            new_filename = client_name + ' - atualizada em ' + today.strftime("%d-%m-%Y_%H-%M-%S")
-            final_directory = str(directory_to_save) + new_filename + '.xlsx'
-            df_de_dados_novos.to_excel(final_directory, index=False, header=True, encoding='utf-8-sig')
-
         else:
             copyfile(files, str(directory_to_save) + "\\" + files.split("\\")[-1])
     except:
         erros_list = []
         erros_list.append(new_filename)
+        atualizadas.append([new_filename, "0", 'atualizada'])
         print('Erro ao processar: ',new_filename )
 
+atualizacoes = pd.DataFrame(atualizadas, columns =['Empresa', 'Quantidade', 'Status'])
+atualizacoes_directory = str(directory_to_save) + 'retencao_atualizacao_' + today.strftime("%d-%m-%Y_%H-%M-%S") + '.csv'
+atualizacoes.to_csv(atualizacoes_directory, index=False, encoding='utf-8-sig')
 sg.popup('Seu arquivo foi processado com sucesso e está disponível em: ', directory_to_save,
-         'Identificamos erros no processamento dos seguintes arquivos: ',erros_list)
+         'Identificamos erros no processamento dos seguintes arquivos: ', erros_list)

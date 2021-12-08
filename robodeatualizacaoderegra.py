@@ -92,66 +92,66 @@ df_planilhao_filial_com_municipio.loc[df_planilhao_filial_com_municipio[df_plani
 
 # # lendo csv do CPOM
 
-# df_base_cepom = sg.popup_get_file('Escolha a planilha "base_cpom.xlsx" atualizada:')
-df_base_cepom = pd.read_excel(df_base_cepom, dtype=object)
-# criando DF com filial_formatada e LC a partir do CPOM
-df_base_cepom = df_base_cepom[[df_base_cepom.iloc[:, [0]].columns[0],df_base_cepom.iloc[:, [-1]].columns[0]]]
-
-
-df_base_cepom = df_base_cepom.rename(columns={df_base_cepom.iloc[:, [0]].columns[0]: 'prestador_formatada'})
-df_base_cepom['LC'] = df_base_cepom[[df_base_cepom.iloc[:, [1]].columns[0]]].astype('str')
-df_base_cepom['LC'] = df_base_cepom['LC'].str.split(' -', expand=True)[0]
-df_base_cepom_cnpj_lc = df_base_cepom[[df_base_cepom.iloc[:, [0]].columns[0], df_base_cepom.iloc[:, [-1]].columns[0]]]
-df_base_cepom_cnpj_lc['cpom'] = 'não'
-
-df_planilhao_filial_com_municipio = df_planilhao_filial_com_municipio.merge(df_base_cepom_cnpj_lc, on=['prestador_formatada', 'LC'], how='left')
-
-df_planilhao_filial_com_municipio.loc[(df_planilhao_filial_com_municipio['analisar_se_calcular_iss'] == 'sim') &
-                                      (df_planilhao_filial_com_municipio['cpom'] != 'sim'),
-                                      'conclusão_analise_calcular_iss'] = 'sim'
-
-df_planilhao_filial_com_municipio.loc[(df_planilhao_filial_com_municipio['analisar_se_calcular_iss'] == 'sim') &
-                                      (df_planilhao_filial_com_municipio['cpom'] == 'não'),
-                                      'conclusão_analise_calcular_iss'] = 'zerar'
-
-df_planilhao_filial_com_municipio.loc[(df_planilhao_filial_com_municipio['analisar_se_calcular_iss'] != 'sim') &
-                                      (df_planilhao_filial_com_municipio['cpom'] != 'não'),
-                                      'conclusão_analise_calcular_iss'] = 'não'
-
-print(df_planilhao_filial_com_municipio['analisar_se_calcular_iss'].value_counts())
-print(df_planilhao_filial_com_municipio['cpom'].value_counts())
-print(df_planilhao_filial_com_municipio['conclusão_analise_calcular_iss'].value_counts())
-
-# df_planilhao_filial_com_municipio['conclusão_analise_calcular_iss'] = df_planilhao_filial_com_municipio['conclusão_analise_calcular_iss'].replace(np.nan, 'não')
-
-# # lendo csv do CPOM
-# df_aliquota_cpom = sg.popup_get_file('Escolha a planilha "aliquota_cpom.xlsx" atualizada:')
-df_aliquota_cpom = pd.read_excel(df_aliquota_cpom, dtype=object)
-df_planilhao_filial_com_municipio = df_planilhao_filial_com_municipio.merge(df_aliquota_cpom, on=['LC'], how='left')
-# print(df_planilhao_filial_com_municipio[df_planilhao_filial_com_municipio.iloc[:, [-1]].columns[0]])
-
-## SEGUNDO CÁLCULO DE ISS:
-# ajustar a aliquota conforme o que está na planilha (5%, 2,9%, se não estiver na tabela 0%)
-# coluna 15 (aliquota ISS), onde coluna -1 (check) for True, recebe 0, senão continua o que era na coluna 15 (aliquota ISS)
-df_planilhao_filial_com_municipio[df_planilhao_filial_com_municipio.iloc[:, [15]].columns[0]] = np.where(
-df_planilhao_filial_com_municipio[df_planilhao_filial_com_municipio.iloc[:, [-2]].columns[0]] == 'zerar', 0, df_planilhao_filial_com_municipio[df_planilhao_filial_com_municipio.iloc[:, [15]].columns[0]]
-)
-
-# coluna 16 (retenção ISS), onde coluna -1 (check) for True, recebe 0, senão continua o que era na coluna 16 (retenção ISS)
-df_planilhao_filial_com_municipio[df_planilhao_filial_com_municipio.iloc[:, [16]].columns[0]] = np.where(
-df_planilhao_filial_com_municipio[df_planilhao_filial_com_municipio.iloc[:, [-2]].columns[0]] == 'zerar', 0, df_planilhao_filial_com_municipio[df_planilhao_filial_com_municipio.iloc[:, [16]].columns[0]]
-)
-
-# coluna 15 (aliquota ISS), onde coluna -1 (check) for True, recebe 0, senão continua o que era na coluna 15 (aliquota ISS)
-df_planilhao_filial_com_municipio[df_planilhao_filial_com_municipio.iloc[:, [15]].columns[0]] = np.where(
-df_planilhao_filial_com_municipio[df_planilhao_filial_com_municipio.iloc[:, [-2]].columns[0]] == 'sim', df_planilhao_filial_com_municipio[df_planilhao_filial_com_municipio.iloc[:, [-1]].columns[0]],
-    df_planilhao_filial_com_municipio[df_planilhao_filial_com_municipio.iloc[:, [15]].columns[0]]
-)
-
-# coluna 16 (retenção ISS), onde coluna -1 (check) for True, recebe 0, senão continua o que era na coluna 16 (retenção ISS)
-df_planilhao_filial_com_municipio[df_planilhao_filial_com_municipio.iloc[:, [16]].columns[0]] = np.where(
-df_planilhao_filial_com_municipio[df_planilhao_filial_com_municipio.iloc[:, [-2]].columns[0]] == 'sim', df_planilhao_filial_com_municipio[df_planilhao_filial_com_municipio.iloc[:, [15]].columns[0]]/100*df_planilhao_filial_com_municipio[df_planilhao_filial_com_municipio.iloc[:, [13]].columns[0]], df_planilhao_filial_com_municipio[df_planilhao_filial_com_municipio.iloc[:, [16]].columns[0]]
-)
+# # df_base_cepom = sg.popup_get_file('Escolha a planilha "base_cpom.xlsx" atualizada:')
+# df_base_cepom = pd.read_excel(df_base_cepom, dtype=object)
+# # criando DF com filial_formatada e LC a partir do CPOM
+# df_base_cepom = df_base_cepom[[df_base_cepom.iloc[:, [0]].columns[0],df_base_cepom.iloc[:, [-1]].columns[0]]]
+#
+#
+# df_base_cepom = df_base_cepom.rename(columns={df_base_cepom.iloc[:, [0]].columns[0]: 'prestador_formatada'})
+# df_base_cepom['LC'] = df_base_cepom[[df_base_cepom.iloc[:, [1]].columns[0]]].astype('str')
+# df_base_cepom['LC'] = df_base_cepom['LC'].str.split(' -', expand=True)[0]
+# df_base_cepom_cnpj_lc = df_base_cepom[[df_base_cepom.iloc[:, [0]].columns[0], df_base_cepom.iloc[:, [-1]].columns[0]]]
+# df_base_cepom_cnpj_lc['cpom'] = 'não'
+#
+# df_planilhao_filial_com_municipio = df_planilhao_filial_com_municipio.merge(df_base_cepom_cnpj_lc, on=['prestador_formatada', 'LC'], how='left')
+#
+# df_planilhao_filial_com_municipio.loc[(df_planilhao_filial_com_municipio['analisar_se_calcular_iss'] == 'sim') &
+#                                       (df_planilhao_filial_com_municipio['cpom'] != 'sim'),
+#                                       'conclusão_analise_calcular_iss'] = 'sim'
+#
+# df_planilhao_filial_com_municipio.loc[(df_planilhao_filial_com_municipio['analisar_se_calcular_iss'] == 'sim') &
+#                                       (df_planilhao_filial_com_municipio['cpom'] == 'não'),
+#                                       'conclusão_analise_calcular_iss'] = 'zerar'
+#
+# df_planilhao_filial_com_municipio.loc[(df_planilhao_filial_com_municipio['analisar_se_calcular_iss'] != 'sim') &
+#                                       (df_planilhao_filial_com_municipio['cpom'] != 'não'),
+#                                       'conclusão_analise_calcular_iss'] = 'não'
+#
+# print(df_planilhao_filial_com_municipio['analisar_se_calcular_iss'].value_counts())
+# print(df_planilhao_filial_com_municipio['cpom'].value_counts())
+# print(df_planilhao_filial_com_municipio['conclusão_analise_calcular_iss'].value_counts())
+#
+# # df_planilhao_filial_com_municipio['conclusão_analise_calcular_iss'] = df_planilhao_filial_com_municipio['conclusão_analise_calcular_iss'].replace(np.nan, 'não')
+#
+# # # lendo csv do CPOM
+# # df_aliquota_cpom = sg.popup_get_file('Escolha a planilha "aliquota_cpom.xlsx" atualizada:')
+# df_aliquota_cpom = pd.read_excel(df_aliquota_cpom, dtype=object)
+# df_planilhao_filial_com_municipio = df_planilhao_filial_com_municipio.merge(df_aliquota_cpom, on=['LC'], how='left')
+# # print(df_planilhao_filial_com_municipio[df_planilhao_filial_com_municipio.iloc[:, [-1]].columns[0]])
+#
+# ## SEGUNDO CÁLCULO DE ISS:
+# # ajustar a aliquota conforme o que está na planilha (5%, 2,9%, se não estiver na tabela 0%)
+# # coluna 15 (aliquota ISS), onde coluna -1 (check) for True, recebe 0, senão continua o que era na coluna 15 (aliquota ISS)
+# df_planilhao_filial_com_municipio[df_planilhao_filial_com_municipio.iloc[:, [15]].columns[0]] = np.where(
+# df_planilhao_filial_com_municipio[df_planilhao_filial_com_municipio.iloc[:, [-2]].columns[0]] == 'zerar', 0, df_planilhao_filial_com_municipio[df_planilhao_filial_com_municipio.iloc[:, [15]].columns[0]]
+# )
+#
+# # coluna 16 (retenção ISS), onde coluna -1 (check) for True, recebe 0, senão continua o que era na coluna 16 (retenção ISS)
+# df_planilhao_filial_com_municipio[df_planilhao_filial_com_municipio.iloc[:, [16]].columns[0]] = np.where(
+# df_planilhao_filial_com_municipio[df_planilhao_filial_com_municipio.iloc[:, [-2]].columns[0]] == 'zerar', 0, df_planilhao_filial_com_municipio[df_planilhao_filial_com_municipio.iloc[:, [16]].columns[0]]
+# )
+#
+# # coluna 15 (aliquota ISS), onde coluna -1 (check) for True, recebe 0, senão continua o que era na coluna 15 (aliquota ISS)
+# df_planilhao_filial_com_municipio[df_planilhao_filial_com_municipio.iloc[:, [15]].columns[0]] = np.where(
+# df_planilhao_filial_com_municipio[df_planilhao_filial_com_municipio.iloc[:, [-2]].columns[0]] == 'sim', df_planilhao_filial_com_municipio[df_planilhao_filial_com_municipio.iloc[:, [-1]].columns[0]],
+#     df_planilhao_filial_com_municipio[df_planilhao_filial_com_municipio.iloc[:, [15]].columns[0]]
+# )
+#
+# # coluna 16 (retenção ISS), onde coluna -1 (check) for True, recebe 0, senão continua o que era na coluna 16 (retenção ISS)
+# df_planilhao_filial_com_municipio[df_planilhao_filial_com_municipio.iloc[:, [16]].columns[0]] = np.where(
+# df_planilhao_filial_com_municipio[df_planilhao_filial_com_municipio.iloc[:, [-2]].columns[0]] == 'sim', df_planilhao_filial_com_municipio[df_planilhao_filial_com_municipio.iloc[:, [15]].columns[0]]/100*df_planilhao_filial_com_municipio[df_planilhao_filial_com_municipio.iloc[:, [13]].columns[0]], df_planilhao_filial_com_municipio[df_planilhao_filial_com_municipio.iloc[:, [16]].columns[0]]
+# )
 
 # df_planilhao_filial_com_municipio['regra_cpom'] = df_planilhao_filial_com_municipio.loc[
 #     (df_planilhao_filial_com_municipio[df_planilhao_filial_com_municipio.iloc[:, [29]].columns[0]] == 'São Paulo') &
