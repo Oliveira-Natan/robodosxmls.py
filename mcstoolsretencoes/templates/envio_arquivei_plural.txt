@@ -1,0 +1,12 @@
+Olá, ${NOME}
+
+
+${QTD} XMLs acabaram de ser enviados para a Arquivei e seus nomes são: 
+
+
+${ARQUIVOS}
+
+
+Atenciosamente,
+RobodosEmails
+Squad de Inovação
