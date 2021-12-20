@@ -10,7 +10,7 @@ import ssl
 from string import Template
 
 from mcstoolsretencoes.utils.diretorio import Diretorio
-from mcstoolsretencoes.utils.relatorio import Relatorio, ArquivoRelatorio
+from mcstoolsretencoes.utils.relatorio import Relatorio, NomeRobo
 
 
 EMAIL_REMETENTE = "impostosretidos@mcsmarkup.com.br"
@@ -45,9 +45,8 @@ def enviar_email(nome_arquivo):
         server.login(EMAIL_REMETENTE, SENHA_REMETENTE)
         server.sendmail(EMAIL_REMETENTE, EMAIL_DESTINATARIO, email.as_string())
     print(f"enviado por email: {assunto_email}")
-    destino_arquivo = (
-        Path(Diretorio.TEMP_INDIVIDUALIZADOS_ENVIADOS_ARQUIVEI) / nome_arquivo
-    )
+    # fmt: off
+    destino_arquivo = Path(Diretorio.TEMP_INDIVIDUALIZADOS_ENVIADOS_ARQUIVEI) / nome_arquivo
     shutil.move(caminho_arquivo, destino_arquivo)
 
 
@@ -92,22 +91,25 @@ def run():
         return
 
     lista_de_xmls_enviados = []
-    relatorio = Relatorio(
-        diretorio=Diretorio.TEMP_INDIVIDUALIZADOS,
-        arquivo_sucesso=ArquivoRelatorio.ROBO_EMAILS_ARQUIVEI,
-        arquivo_erro=ArquivoRelatorio.ROBO_ERROS,
-        rotina_sucesso="robodosemailsparaarquivei",
-        rotina_erro="robodosemails",
-        acao_sucesso="temp_individualizados to temp_individualizados_enviados_arquivei",
-        acao_erro="ERROR: temp_individualizados to temp_individualizados_enviados_arquivei",
+    relatorio_envio = Relatorio(
+        diretorio_envios=Diretorio.TEMP_INDIVIDUALIZADOS,
+        arquivo=NomeRobo.ROBO_EMAILS_ARQUIVEI,
+        nome_robo="robodosemailsparaarquivei",
+        acao="temp_individualizados to temp_individualizados_enviados_arquivei",
+    )
+    relatorio_erro = Relatorio(
+        diretorio_envios=Diretorio.TEMP_INDIVIDUALIZADOS,
+        arquivo=NomeRobo.ROBO_ERROS,
+        nome_robo="robodosemails",
+        acao="ERROR: temp_individualizados to temp_individualizados_enviados_arquivei",
     )
     for arquivo in listdir(Diretorio.TEMP_INDIVIDUALIZADOS):
         try:
             enviar_email(arquivo)
-            relatorio.registrar_envio(arquivo)
+            relatorio_envio.registrar(arquivo)
             lista_de_xmls_enviados.append(arquivo)
         except:
-            relatorio.registrar_erro(arquivo)
+            relatorio_erro.registrar(arquivo)
     enviar_email_novos_arquivos(lista_de_xmls_enviados)
 
 

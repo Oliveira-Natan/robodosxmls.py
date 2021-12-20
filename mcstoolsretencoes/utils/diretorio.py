@@ -1,10 +1,4 @@
-from enum import Enum
-
-
-from enum import Enum
-
-
-class Diretorio(Enum):
+class Diretorio:
     CENTRAL_DE_NOTAS = r"F:\CentralDeNotas"
     REPORT = r"F:\robodepdfs\reports"
     TEMP_ORIGINAL = r"F:\robodepdfs\temp_original"

@@ -1,11 +1,14 @@
 from datetime import datetime
-from enum import Enum
 from pathlib import Path
+from os.path import isfile
 
-from pandas import Series, read_csv
+from pandas import DataFrame
 
 
-class ArquivoRelatorio(Enum):
+BASE_DIR = Path(r"F:\robodepdfs\reports")
+
+
+class NomeRobo:
     ROBO_INDIVIDUALIZACAO = "robodeindividualizacao"
     ROBO_ERROS = "errosdosrobos"
     ROBO_PDF = "robodospdfs"
@@ -15,47 +18,44 @@ class ArquivoRelatorio(Enum):
 
 
 class Relatorio:
-    BASE_DIR = r"F:\robodepdfs\reports"
-
     def __init__(
         self,
-        diretorio: str,
-        arquivo_sucesso: str,
-        arquivo_erro: str,
-        rotina_sucesso: str,
-        rotina_erro: str,
-        acao_sucesso: str,
-        acao_erro: str,
+        diretorio_envios: str,
+        arquivo: str,
+        nome_robo: str,
+        acao: str,
     ):
         data = datetime.now()
         self.ano = data.year
         self.mes = f"{data.month:01}"
-        self.diretorio = diretorio
-        self.arquivo_sucesso = self._gerar_nome_arquivo(arquivo_sucesso)
-        self.arquivo_erro = self._gerar_nome_arquivo(arquivo_erro)
-        self.rotina_sucesso = rotina_sucesso
-        self.rotina_erro = rotina_erro
-        self.acao_sucesso = acao_sucesso
-        self.acao_erro = acao_erro
+        self.diretorio = BASE_DIR
+        self.diretorio_envios = diretorio_envios
+        self.arquivo = self._gerar_arquivo(arquivo)
+        self.nome_robo = nome_robo
+        self.acao = acao
 
-    def _gerar_nome_arquivo(self, nome):
-        arquivo = f"\\{nome}_{self.ano}_{self.mes}.csv"
-        return Path(self.BASE_DIR) / arquivo
+    def _gerar_arquivo(self, nome):
+        arquivo = f"{nome}_{self.ano}_{self.mes}.csv"
+        path_arquivo = Path(self.diretorio) / arquivo
+        if isfile(path_arquivo) is False:
+            msg = (
+                f"Criando arquivo {arquivo} para o robo {self.nome_robo} "
+                "para a data de {self.ano}-{self.mes}..."
+            )
+            with open(path_arquivo, "w") as arquivo:
+                arquivo.write("time,nomedorobo,acao,path\n")
+        return path_arquivo
 
-    def registrar_envio(self, arquivo):
-        dados = Series(
+    def registrar(self, nome_arquivo: str):
+        dados = [
             datetime.now(),
-            self.rotina_sucesso,
-            self.acao_sucesso,
-            arquivo,
+            self.nome_robo,
+            self.acao,
+            Path(self.diretorio_envios) / nome_arquivo,
+        ]
+        DataFrame([dados]).to_csv(
+            self.arquivo,
+            mode="a",
+            header=False,
+            index=False,
         )
-        dados.to_csv(self.arquivo_sucesso, mode="a", header=False)
-
-    def registrar_erro(self, arquivo):
-        dados = Series(
-            datetime.now(),
-            self.rotina_sucesso,
-            self.acao_sucesso,
-            arquivo,
-        )
-        dados.to_csv(self.arquivo_erro, mode="a", header=False)
