@@ -1,0 +1,4 @@
+*.pyc
+sandbox/
+__pycache__/
+.idea/

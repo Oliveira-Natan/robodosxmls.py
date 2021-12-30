@@ -1,0 +1,12 @@
+Olá, ${NOME}
+
+
+O seguinte XML acabou de ser enviado para a Arquivei: 
+
+
+${ARQUIVOS}
+
+
+Atenciosamente,
+RobodosEmails
+Squad de Inovação
