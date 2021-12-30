@@ -86,11 +86,16 @@ reportrobodosemails = '\\robodosemails_' + str(currentYear) + '_' + str(currentM
 reportrobodoarquivei = '\\robodoarquivei_' + str(currentYear) + '_' + str(currentMonth) + '.csv'
 
 # start process
+# listar arquivos ja copiados
+# listar arquivos nas pastas
+# listar arquivos pendentes de copia
+
+# iniciar copia
+
 
 try:
     list_filestocopy = filestocopy(path_centraldenotas, path_report, reportrobodospdfs)
     if len(list_filestocopy) != 0:
-        # print(len(list_filestocopy))
         for file_in_centraldenotas in list_filestocopy:  # for each file to copy from CentraldeNotas to temp_original
             print('nome do arquivo', file_in_centraldenotas)
             extentions = [".PDF", ".pdf", ".Pdf"]
