@@ -1,7 +1,7 @@
-Olá, ${NOME}
+Oie, ${NOME}
 
 
-${QTD} XMLs acabaram de ser enviados para a Arquivei e seus nomes são: 
+${QTD} PDFs acabaram de ser enviados para a Arquivei e seus nomes são:
 
 
 ${ARQUIVOS}

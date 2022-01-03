@@ -15,7 +15,8 @@ from mcstoolsretencoes.utils.relatorio import Relatorio, NomeRobo
 
 EMAIL_REMETENTE = "impostosretidos@mcsmarkup.com.br"
 SENHA_REMETENTE = "50MCS14p@dr@o"
-EMAIL_DESTINATARIO = "mcsmarkup@ocr.arquivei.com.br"
+# EMAIL_DESTINATARIO = "mcsmarkup@ocr.arquivei.com.br"
+EMAIL_DESTINATARIO = "felipe.rosa@mcsmarkup.com.br"
 EMAIL_ANALISTA = "natan.oliveira@mcsmarkup.com.br"
 
 
@@ -86,6 +87,8 @@ def enviar_email_novos_arquivos(arquivos):
 
 
 def run():
+
+
     if len(listdir(Diretorio.TEMP_INDIVIDUALIZADOS)) == 0:
         print("Não há arquivos para enviar")
         return
@@ -95,13 +98,13 @@ def run():
         diretorio_envios=Diretorio.TEMP_INDIVIDUALIZADOS,
         arquivo=NomeRobo.ROBO_EMAILS_ARQUIVEI,
         nome_robo="robodosemailsparaarquivei",
-        acao="temp_individualizados to temp_individualizados_enviados_arquivei",
+        acao="temp_individualizados to temp_enviados",
     )
     relatorio_erro = Relatorio(
         diretorio_envios=Diretorio.TEMP_INDIVIDUALIZADOS,
         arquivo=NomeRobo.ROBO_ERROS,
-        nome_robo="robodosemails",
-        acao="ERROR: temp_individualizados to temp_individualizados_enviados_arquivei",
+        nome_robo="robodosemailsparaarquivei",
+        acao="ERROR: temp_individualizados to temp_enviados",
     )
     for arquivo in listdir(Diretorio.TEMP_INDIVIDUALIZADOS):
         try:

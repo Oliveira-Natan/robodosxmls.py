@@ -1,7 +1,7 @@
-Olá, ${NOME}
+Oie, ${NOME}
 
 
-O seguinte XML acabou de ser enviado para a Arquivei: 
+O seguinte PDF acabou de ser enviado para a Arquivei:
 
 
 ${ARQUIVOS}
