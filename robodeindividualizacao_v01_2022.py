@@ -1,3 +1,5 @@
+import time
+
 from PyPDF2 import PdfFileReader, PdfFileWriter
 import os.path
 import shutil
@@ -57,6 +59,7 @@ def listaarquivosparaprocessarnafaseatual(arquivosprocessadosnafaseanterior_list
     return path_files_to_copy
 
 def processamento(origem, destino, path_destino_atual, tentativa):
+    print('iniciando ', tentativa)
     if origem.upper().endswith(".PDF"):  # if file ends with .pdf
         path_original_and_filename = origem  # creating file path
         with open(path_original_and_filename, 'rb') as pdf_file:  # read file as pdf_file
@@ -131,6 +134,7 @@ def uploadingReport(action_list, reportdafaseatual):
     action_list = pd.Series(action_list, index=robo_data.columns)  # convertendo lista de acao em serie
     robo_data = robo_data.append(action_list, ignore_index=True)  # appending serie no report
     robo_data.to_csv(reportdafaseatual, index=False)  # salvando report
+    time.sleep(1)
 
 def uploadingReportError(action_list, reportdosrobos_erros):
     robo_data_error = pd.read_csv(reportdosrobos_erros)
@@ -140,14 +144,27 @@ def uploadingReportError(action_list, reportdosrobos_erros):
 
 # path and reports names
 onedrive_path = r'C:\Users\felipe.rosa\OneDrive - MCS MARKUP AUDITORIA E CONSULTORIA EMPRESARIAL LTDA\CentraldeNotas'
-centraldosrobos_path = r'F:\robodepdfs\centraldosrobos'
-temp_original_path = r'F:\robodepdfs\temp_original'
-temp_individualizados_path = r'F:\robodepdfs\temp_individualizados'
+# centraldosrobos_path = r'F:\robodepdfs\centraldosrobos'
+# temp_original_path = r'F:\robodepdfs\temp_original'
+# temp_individualizados_path = r'F:\robodepdfs\temp_individualizados'
+# temp_enviados_path = r'F:\robodepdfs\temp_enviados'
+#
+# reportdosrobos_erros = r'F:\robodepdfs\reports\errosdosrobos.csv'
+# report_robodoonedrive = r'F:\robodepdfs\reports\robodoonedrive.csv'
+# report_robodospdfs = r'F:\robodepdfs\reports\robodospdfs.csv'
+# report_robodeindividualizacao = r'F:\robodepdfs\reports\robodeindividualizacao.csv'
+# report_robodosemailsparaarquivei = r'F:\robodepdfs\reports\robodosemails.csv'
 
-reportdosrobos_erros = r'F:\robodepdfs\reports\errosdosrobos.csv'
-report_robodoonedrive = r'F:\robodepdfs\reports\robodoonedrive.csv'
-report_robodospdfs = r'F:\robodepdfs\reports\robodospdfs.csv'
-report_robodeindividualizacao = r'F:\robodepdfs\reports\robodeindividualizacao.csv'
+centraldosrobos_path = r'C:\Users\felipe.rosa\Desktop\rede\robodepdfs\centraldosrobos'
+temp_original_path = r'C:\Users\felipe.rosa\Desktop\rede\robodepdfs\temp_original'
+temp_individualizados_path = r'C:\Users\felipe.rosa\Desktop\rede\robodepdfs\temp_individualizados'
+temp_enviados_path = r'C:\Users\felipe.rosa\Desktop\rede\robodepdfs\temp_enviados'
+
+reportdosrobos_erros = r'C:\Users\felipe.rosa\Desktop\rede\robodepdfs\reports\errosdosrobos.csv'
+report_robodoonedrive = r'C:\Users\felipe.rosa\Desktop\rede\robodepdfs\reports\robodoonedrive.csv'
+report_robodospdfs = r'C:\Users\felipe.rosa\Desktop\rede\robodepdfs\reports\robodospdfs.csv'
+report_robodeindividualizacao = r'C:\Users\felipe.rosa\Desktop\rede\robodepdfs\reports\robodeindividualizacao.csv'
+report_robodosemailsparaarquivei = r'C:\Users\felipe.rosa\Desktop\rede\robodepdfs\reports\robodosemails.csv'
 
 reportdafaseanterior = report_robodospdfs
 reportdafaseatual = report_robodeindividualizacao
@@ -165,7 +182,7 @@ if diretoriosparacriar_list != 0:
 arquivosjaprocessadosnafaseatual_list = listaarquivosjaprocessadosnafaseatual(reportdafaseatual)  # lista arquivosjaprocessadosnafaseatual
 arquivosprocessadosnafaseanterior_list = listaarquivosprocessadosnafaseanterior(reportdafaseanterior)  # listar arquivosprocessadosnafaseanterior
 arquivosparaprocessarnafaseatual_list = listaarquivosparaprocessarnafaseatual(arquivosprocessadosnafaseanterior_list, arquivosjaprocessadosnafaseatual_list, path_origem_atual, path_destino_atual)  # listar arquivosparaprocessarnafaseatual
-print(arquivosparaprocessarnafaseatual_list)
+# print(arquivosparaprocessarnafaseatual_list)
 
 n = 0
 e = 0
@@ -179,8 +196,8 @@ if len(arquivosparaprocessarnafaseatual_list) > 0:
                 action_list = [id, serie, datetime.now(), 'robodeindividualizacao', 'temp_original to temp_individualizados', origem, arquivos_criados_ou_movidos]
                 uploadingReport(action_list, reportdafaseatual)
                 print(n, 'Processado id: ', id, 'serie: ', serie)
-                n += 1
                 serie += 1
+            n += 1
         except:
             try:  # TENTANDO NOVAMENTE, MAS COM REDUCAO DO NOME DO DIRETORIO
                 arquivos_criados_ou_movidos_list = processamento("\\\\?\\" + origem, "\\\\?\\" + destino, path_destino_atual, 'tentativa02')
@@ -189,8 +206,8 @@ if len(arquivosparaprocessarnafaseatual_list) > 0:
                     action_list = [id, serie, datetime.now(), 'robodeindividualizacao', 'temp_original to temp_individualizados', origem, arquivos_criados_ou_movidos]
                     uploadingReport(action_list, reportdafaseatual)
                     print(n, 'Processado id: ', id, 'serie: ', serie)
-                    n += 1
                     serie += 1
+                n += 1
             except:
                 try:  # TENTANDO NOVAMENTE, MAS COM OUTRA TECNICA DE REDUCAO DO NOME DO DIRETORIO
                     destino_curto = os.path.dirname(os.path.abspath(destino))  # pega o diretorio do arquivo, sem o nome
@@ -207,8 +224,8 @@ if len(arquivosparaprocessarnafaseatual_list) > 0:
                         action_list = [id, serie, datetime.now(), 'robodeindividualizacao', 'temp_original to temp_individualizados', origem, arquivos_criados_ou_movidos]
                         uploadingReport(action_list, reportdafaseatual)
                         print(n, 'Processado id: ', id, 'serie: ', serie)
-                        n += 1
                         serie += 1
+                    n += 1
                 except:
                     action_list = [id, "", datetime.now(), 'robodeindividualizacao', 'ERROR: temp_original to temp_individualizados', origem, destino]
                     uploadingReportError(action_list, reportdosrobos_erros)

@@ -1,3 +1,5 @@
+import time
+
 from PyPDF2 import PdfFileReader, PdfFileWriter
 import os.path
 import shutil
@@ -73,7 +75,8 @@ def listaarquivosparaprocessarnafaseatual(arquivosprocessadosnafaseanterior_list
 def processamento(origem, destino):
     shutil.copy(origem, destino)  # copiando pdfs do individualizado para enviados
 
-def enviar_email(origem, destino, path_destino_atual, id, serie):
+def enviar_email(origem, destino, path_destino_atual, id, serie, tentativa):
+    print(tentativa)
     nome_arquivo = origem.split('\\')[-1]
     if not nome_arquivo.replace("PDF", "pdf").endswith(".pdf"):
         return
@@ -149,19 +152,33 @@ def uploadingReportError(action_list, reportdosrobos_erros):
     action_list = pd.Series(action_list, index=robo_data_error.columns)  # convertendo lista de acao em serie
     robo_data_error = robo_data_error.append(action_list, ignore_index=True)  # appending serie no report
     robo_data_error.to_csv(reportdosrobos_erros, index=False)  # salvando report
+    time.sleep(1)
 
 # path and reports names
 onedrive_path = r'C:\Users\felipe.rosa\OneDrive - MCS MARKUP AUDITORIA E CONSULTORIA EMPRESARIAL LTDA\CentraldeNotas'
-centraldosrobos_path = r'F:\robodepdfs\centraldosrobos'
-temp_original_path = r'F:\robodepdfs\temp_original'
-temp_individualizados_path = r'F:\robodepdfs\temp_individualizados'
-temp_enviados_path = r'F:\robodepdfs\temp_enviados'
+# centraldosrobos_path = r'F:\robodepdfs\centraldosrobos'
+# temp_original_path = r'F:\robodepdfs\temp_original'
+# temp_individualizados_path = r'F:\robodepdfs\temp_individualizados'
+# temp_enviados_path = r'F:\robodepdfs\temp_enviados'
+#
+# reportdosrobos_erros = r'F:\robodepdfs\reports\errosdosrobos.csv'
+# report_robodoonedrive = r'F:\robodepdfs\reports\robodoonedrive.csv'
+# report_robodospdfs = r'F:\robodepdfs\reports\robodospdfs.csv'
+# report_robodeindividualizacao = r'F:\robodepdfs\reports\robodeindividualizacao.csv'
+# report_robodosemailsparaarquivei = r'F:\robodepdfs\reports\robodosemails.csv'
 
-reportdosrobos_erros = r'F:\robodepdfs\reports\errosdosrobos.csv'
-report_robodoonedrive = r'F:\robodepdfs\reports\robodoonedrive.csv'
-report_robodospdfs = r'F:\robodepdfs\reports\robodospdfs.csv'
-report_robodeindividualizacao = r'F:\robodepdfs\reports\robodeindividualizacao.csv'
-report_robodosemailsparaarquivei = r'F:\robodepdfs\reports\robodosemails.csv'
+
+centraldosrobos_path = r'C:\Users\felipe.rosa\Desktop\rede\robodepdfs\centraldosrobos'
+temp_original_path = r'C:\Users\felipe.rosa\Desktop\rede\robodepdfs\temp_original'
+temp_individualizados_path = r'C:\Users\felipe.rosa\Desktop\rede\robodepdfs\temp_individualizados'
+temp_enviados_path = r'C:\Users\felipe.rosa\Desktop\rede\robodepdfs\temp_enviados'
+
+reportdosrobos_erros = r'C:\Users\felipe.rosa\Desktop\rede\robodepdfs\reports\errosdosrobos.csv'
+report_robodoonedrive = r'C:\Users\felipe.rosa\Desktop\rede\robodepdfs\reports\robodoonedrive.csv'
+report_robodospdfs = r'C:\Users\felipe.rosa\Desktop\rede\robodepdfs\reports\robodospdfs.csv'
+report_robodeindividualizacao = r'C:\Users\felipe.rosa\Desktop\rede\robodepdfs\reports\robodeindividualizacao.csv'
+report_robodosemailsparaarquivei = r'C:\Users\felipe.rosa\Desktop\rede\robodepdfs\reports\robodosemails.csv'
+
 
 
 
@@ -190,20 +207,20 @@ if len(arquivosparaprocessarnafaseatual_list) > 0:
     # iniciar copia
     for id, serie, origem, destino in arquivosparaprocessarnafaseatual_list:
         try:
-            # assunto_email = enviar_email(origem, destino, path_destino_atual, id, serie)  # copiando arquivos (arquivosparaprocessarnafaseatual) da central dos robos para a temp_original (path_destino_atual)
+            assunto_email = enviar_email(origem, destino, path_destino_atual, id, serie, 'tentativa01')  # copiando arquivos (arquivosparaprocessarnafaseatual) da central dos robos para a temp_original (path_destino_atual)
             processamento(origem, destino)  # copiando arquivos (arquivosparaprocessarnafaseatual) da central dos robos para a temp_original (path_destino_atual)
             action_list = [id, serie, datetime.now(), 'robodosemails', 'individualizados to enviados', origem, destino]
             uploadingReport(action_list, reportdafaseatual)
-            # pdfs_enviados_list.append(assunto_email)
+            pdfs_enviados_list.append(assunto_email)
             print(n, 'Processado item: ', id, 'serie: ', serie)
             n += 1
         except:
             try:  # TENTANDO NOVAMENTE, MAS COM REDUCAO DO NOME DO DIRETORIO
-                # assunto_email = enviar_email("\\\\?\\" + origem, "\\\\?\\" + destino, path_destino_atual, id, serie)  # copiando arquivos (arquivosparaprocessarnafaseatual) da central dos robos para a temp_original (path_destino_atual)
+                assunto_email = enviar_email("\\\\?\\" + origem, "\\\\?\\" + destino, path_destino_atual, id, serie, 'tentativa02')  # copiando arquivos (arquivosparaprocessarnafaseatual) da central dos robos para a temp_original (path_destino_atual)
                 processamento("\\\\?\\" + origem, "\\\\?\\" + destino)
                 action_list = [id, serie, datetime.now(), 'robodosemails', 'individualizados to enviados', origem, destino]
                 uploadingReport(action_list, reportdafaseatual)
-                # pdfs_enviados_list.append(assunto_email)
+                pdfs_enviados_list.append(assunto_email)
                 print(n, 'Processado item: ', id, 'serie: ', serie)
                 n += 1
             except:
@@ -216,12 +233,12 @@ if len(arquivosparaprocessarnafaseatual_list) > 0:
                     origem_curto = win32api.GetShortPathName(origem_curto)  # deixa o diretorio do arquivo menor
                     origem_curto = origem_curto + '\\' + filename  # remonta a origem: diretorio menor + nome do arquivo
 
-                    # assunto_email = enviar_email("\\\\?\\" + origem_curto, "\\\\?\\" + destino_curto, path_destino_atual, id, serie)  # copiando arquivos (arquivosparaprocessarnafaseatual) da central dos robos para a temp_original (path_destino_atual)
+                    assunto_email = enviar_email("\\\\?\\" + origem_curto, "\\\\?\\" + destino_curto, path_destino_atual, id, serie, 'tentativa03')  # copiando arquivos (arquivosparaprocessarnafaseatual) da central dos robos para a temp_original (path_destino_atual)
                     processamento("\\\\?\\" + origem_curto, "\\\\?\\" + destino_curto)
 
                     action_list = [id, serie, datetime.now(), 'robodosemails', 'individualizados to enviados', origem, destino]
                     uploadingReport(action_list, reportdafaseatual)
-                    # pdfs_enviados_list.append(assunto_email)
+                    pdfs_enviados_list.append(assunto_email)
                     print(n, 'Processado item: ', id, 'serie: ', serie)
                     n += 1
                 except:
@@ -229,7 +246,7 @@ if len(arquivosparaprocessarnafaseatual_list) > 0:
                     uploadingReportError(action_list, reportdosrobos_erros)
                     print('ERROR: Report de erro dos robos atualizado com sucesso: ', str(id) + "|" + str(serie), "diretorio: ", origem)
                     e += 1
-    # enviar_email_novos_arquivos(pdfs_enviados_list)
+    enviar_email_novos_arquivos(pdfs_enviados_list)
 else:
     print('Não há arquivos novos a serem copiados')
 print('Total de arquivos na central conforme reportdorobodoonedrive: ', len(arquivosparaprocessarnafaseatual_list))

@@ -1,6 +1,7 @@
 # -*- encoding: utf-8 -*-
 import os.path
 import shutil
+import time
 from datetime import datetime
 import pandas as pd
 import win32api
@@ -56,7 +57,8 @@ def listaarquivosparaprocessarnafaseatual(arquivosprocessadosnafaseanterior_list
     print('total de listaarquivosparaprocessarnafaseatual: ', len(path_files_to_copy))
     return path_files_to_copy
 
-def processamento(origem, destino):
+def processamento(origem, destino, tentativa):
+    print(tentativa)
     shutil.copy(origem, destino)  # copiando pdfs da CentraldosRobos para temp_original
     # print('Copiado da centraldosrobos para temp_original: ', origem)
 
@@ -65,6 +67,7 @@ def uploadingReport(action_list, reportdafaseatual):
     action_list = pd.Series(action_list, index=robo_data.columns)  # convertendo lista de acao em serie
     robo_data = robo_data.append(action_list, ignore_index=True)  # appending serie no report
     robo_data.to_csv(reportdafaseatual, index=False)  # salvando report
+    time.sleep(1)
 
 def uploadingReportError(action_list, reportdosrobos_erros):
     robo_data_error = pd.read_csv(reportdosrobos_erros)
@@ -74,14 +77,25 @@ def uploadingReportError(action_list, reportdosrobos_erros):
 
 # path and reports names
 onedrive_path = r'C:\Users\felipe.rosa\OneDrive - MCS MARKUP AUDITORIA E CONSULTORIA EMPRESARIAL LTDA\CentraldeNotas'
-centraldosrobos_path = r'F:\robodepdfs\centraldosrobos'
-temp_original_path = r'F:\robodepdfs\temp_original'
-temp_individualizados_path = r'F:\robodepdfs\temp_individualizados'
+# centraldosrobos_path = r'F:\robodepdfs\centraldosrobos'
+# temp_original_path = r'F:\robodepdfs\temp_original'
+# temp_individualizados_path = r'F:\robodepdfs\temp_individualizados'
+#
+# reportdosrobos_erros = r'F:\robodepdfs\reports\errosdosrobos.csv'
+# report_robodoonedrive = r'F:\robodepdfs\reports\robodoonedrive.csv'
+# report_robodospdfs = r'F:\robodepdfs\reports\robodospdfs.csv'
+# report_robodeindividualizacao = r'F:\robodepdfs\reports\robodeindividualizacao.csv'
 
-reportdosrobos_erros = r'F:\robodepdfs\reports\errosdosrobos.csv'
-report_robodoonedrive = r'F:\robodepdfs\reports\robodoonedrive.csv'
-report_robodospdfs = r'F:\robodepdfs\reports\robodospdfs.csv'
-report_robodeindividualizacao = r'F:\robodepdfs\reports\robodeindividualizacao.csv'
+centraldosrobos_path = r'C:\Users\felipe.rosa\Desktop\rede\robodepdfs\centraldosrobos'
+temp_original_path = r'C:\Users\felipe.rosa\Desktop\rede\robodepdfs\temp_original'
+temp_individualizados_path = r'C:\Users\felipe.rosa\Desktop\rede\robodepdfs\temp_individualizados'
+temp_enviados_path = r'C:\Users\felipe.rosa\Desktop\rede\robodepdfs\temp_enviados'
+
+reportdosrobos_erros = r'C:\Users\felipe.rosa\Desktop\rede\robodepdfs\reports\errosdosrobos.csv'
+report_robodoonedrive = r'C:\Users\felipe.rosa\Desktop\rede\robodepdfs\reports\robodoonedrive.csv'
+report_robodospdfs = r'C:\Users\felipe.rosa\Desktop\rede\robodepdfs\reports\robodospdfs.csv'
+report_robodeindividualizacao = r'C:\Users\felipe.rosa\Desktop\rede\robodepdfs\reports\robodeindividualizacao.csv'
+report_robodosemailsparaarquivei = r'C:\Users\felipe.rosa\Desktop\rede\robodepdfs\reports\robodosemails.csv'
 
 reportdafaseanterior = report_robodoonedrive
 reportdafaseatual = report_robodospdfs
@@ -106,14 +120,14 @@ if len(arquivosparaprocessarnafaseatual_list) > 0:
     # iniciar copia
     for id, origem, destino in arquivosparaprocessarnafaseatual_list:
         try:
-            processamento(origem, destino)  # copiando arquivos (arquivosparaprocessarnafaseatual) da central dos robos para a temp_original (path_destino_atual)
+            processamento(origem, destino, 'tentativa01')  # copiando arquivos (arquivosparaprocessarnafaseatual) da central dos robos para a temp_original (path_destino_atual)
             action_list = [id, "", datetime.now(), 'robodospdfs', 'centraldenotas to temp_original', origem, destino]
             uploadingReport(action_list, reportdafaseatual)
             print(n, 'Processado item: ', id, 'serie: ', '')
             n += 1
         except:
             try:  # TENTANDO NOVAMENTE, MAS COM REDUCAO DO NOME DO DIRETORIO
-                processamento("\\\\?\\" + origem, "\\\\?\\" + destino)
+                processamento("\\\\?\\" + origem, "\\\\?\\" + destino, 'tentativa02')
                 action_list = [id, "",  datetime.now(), 'robodospdfs', 'centraldenotas to temp_original', origem, destino]
                 uploadingReport(action_list, reportdafaseatual)
                 print(n, 'Processado item: ', id, 'serie: ', '')
@@ -128,7 +142,7 @@ if len(arquivosparaprocessarnafaseatual_list) > 0:
                     origem_curto = win32api.GetShortPathName(origem_curto)  # deixa o diretorio do arquivo menor
                     origem_curto = origem_curto + '\\' + filename  # remonta a origem: diretorio menor + nome do arquivo
 
-                    processamento("\\\\?\\" + origem_curto, "\\\\?\\" + destino_curto)
+                    processamento("\\\\?\\" + origem_curto, "\\\\?\\" + destino_curto, 'tentativa03')
 
                     action_list = [id, "", datetime.now(), 'robodospdfs', 'centraldenotas to temp_original', origem, destino]
                     uploadingReport(action_list, reportdafaseatual)
@@ -136,6 +150,7 @@ if len(arquivosparaprocessarnafaseatual_list) > 0:
                     n += 1
                 except:
                     try:  # TENTANDO NOVAMENTE, MAS COM OUTRA TECNICA DE REDUCAO DO NOME DO DIRETORIO (robocopy)
+                        print('tentativa04')
                         destiny_path = os.path.dirname(os.path.abspath(destino))  # pega o diretorio do arquivo, sem o nome
                         origin_path = os.path.dirname(os.path.abspath(origem))  # pega o diretorio do arquivo, sem o nome
                         filename = origem.split('\\')[-1]  # pega o nome do arquivo
