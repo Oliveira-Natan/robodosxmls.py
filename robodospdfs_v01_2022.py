@@ -6,6 +6,7 @@ from datetime import datetime
 import pandas as pd
 import win32api
 from subprocess import call
+import getpass
 
 start = datetime.now()
 
@@ -45,15 +46,16 @@ def listaarquivosprocessadosnafaseanterior(reportdafaseanterior):
     print('Iniciando listagem de listaarquivosprocessadosnafaseanterior')
     df = pd.read_csv(reportdafaseanterior)
     arquivosprocessadosnafaseanterior_list = df.loc[:, ['id', 'destiny']].values.tolist()  # quero a coluna do report do onedrive onde registrei o destino da copia na central
-    print('total de listaarquivosjaprocessadosnafaseatual: ', len(arquivosprocessadosnafaseanterior_list))
+    print('total de listaarquivosprocessadosnafaseanterior: ', len(arquivosprocessadosnafaseanterior_list))
     return arquivosprocessadosnafaseanterior_list
 
-def listaarquivosparaprocessarnafaseatual(arquivosprocessadosnafaseanterior_list, arquivosjaprocessadosnafaseatual_list, path_origem_atual, path_destino_atual):
+def listaarquivosparaprocessarnafaseatual(arquivosprocessadosnafaseanterior_list, arquivosjaprocessadosnafaseatual_list, path_origem_atual, path_destino_atual, robo_path):
     print('Iniciando listagem de listaarquivosparaprocessarnafaseatual')
     path_files_to_copy = []
     for id, item in arquivosprocessadosnafaseanterior_list:
         if item not in arquivosjaprocessadosnafaseatual_list:
-            path_files_to_copy.append([id, item, item.replace(path_origem_atual, path_destino_atual)]) # id, origem, destino
+            item = robo_path + item
+            path_files_to_copy.append([id, item, item.replace('centraldosrobos', 'temp_original')]) # id, origem, destino
     print('total de listaarquivosparaprocessarnafaseatual: ', len(path_files_to_copy))
     return path_files_to_copy
 
@@ -76,43 +78,40 @@ def uploadingReportError(action_list, reportdosrobos_erros):
     robo_data_error.to_csv(reportdosrobos_erros, index=False)  # salvando report
 
 # path and reports names
-onedrive_path = r'C:\Users\felipe.rosa\OneDrive - MCS MARKUP AUDITORIA E CONSULTORIA EMPRESARIAL LTDA\CentraldeNotas'
-# centraldosrobos_path = r'F:\robodepdfs\centraldosrobos'
-# temp_original_path = r'F:\robodepdfs\temp_original'
-# temp_individualizados_path = r'F:\robodepdfs\temp_individualizados'
-#
-# reportdosrobos_erros = r'F:\robodepdfs\reports\errosdosrobos.csv'
-# report_robodoonedrive = r'F:\robodepdfs\reports\robodoonedrive.csv'
-# report_robodospdfs = r'F:\robodepdfs\reports\robodospdfs.csv'
-# report_robodeindividualizacao = r'F:\robodepdfs\reports\robodeindividualizacao.csv'
+username = getpass.getuser()
+onedrive_path = r'C:\Users\{}\OneDrive - MCS MARKUP AUDITORIA E CONSULTORIA EMPRESARIAL LTDA\CentraldeNotas'.format(username)
+robo_path = r'C:\Users\{}\Desktop\rede\robodepdfs'.format(username)
 
-centraldosrobos_path = r'C:\Users\felipe.rosa\Desktop\rede\robodepdfs\centraldosrobos'
-temp_original_path = r'C:\Users\felipe.rosa\Desktop\rede\robodepdfs\temp_original'
-temp_individualizados_path = r'C:\Users\felipe.rosa\Desktop\rede\robodepdfs\temp_individualizados'
-temp_enviados_path = r'C:\Users\felipe.rosa\Desktop\rede\robodepdfs\temp_enviados'
+centraldosrobos_path = r'{}\centraldosrobos'.format(robo_path)
+temp_original_path = r'{}\temp_original'.format(robo_path)
+temp_individualizados_path = r'{}\temp_individualizados'.format(robo_path)
+temp_enviados_path = r'{}\temp_enviados'.format(robo_path)
 
-reportdosrobos_erros = r'C:\Users\felipe.rosa\Desktop\rede\robodepdfs\reports\errosdosrobos.csv'
-report_robodoonedrive = r'C:\Users\felipe.rosa\Desktop\rede\robodepdfs\reports\robodoonedrive.csv'
-report_robodospdfs = r'C:\Users\felipe.rosa\Desktop\rede\robodepdfs\reports\robodospdfs.csv'
-report_robodeindividualizacao = r'C:\Users\felipe.rosa\Desktop\rede\robodepdfs\reports\robodeindividualizacao.csv'
-report_robodosemailsparaarquivei = r'C:\Users\felipe.rosa\Desktop\rede\robodepdfs\reports\robodosemails.csv'
+reportdosrobos_erros = r'{}\reports\errosdosrobos.csv'.format(robo_path)
+report_robodoonedrive = r'{}\reports\robodoonedrive.csv'.format(robo_path)
+report_robodospdfs = r'{}\reports\robodospdfs.csv'.format(robo_path)
+report_robodeindividualizacao = r'{}\reports\robodeindividualizacao.csv'.format(robo_path)
+report_robodosemailsparaarquivei = r'{}\reports\robodosemails.csv'.format(robo_path)
 
 reportdafaseanterior = report_robodoonedrive
 reportdafaseatual = report_robodospdfs
 path_origem_atual = centraldosrobos_path
 path_destino_atual = temp_original_path
 
-## TRATAMENTO DE FOLDERS: clonando estrutura da fase anterior para a fase atual
-diretorios_do_path_origem_atual = listardiretorios(path_origem_atual)  # listar estrutura de pasta da fase anterior
-diretorios_da_path_destino_atual = listardiretorios(path_destino_atual)  # listar estrutura de pasta da fase atual
-diretoriosparacriar_list = diretoriosparacriar(diretorios_do_path_origem_atual, diretorios_da_path_destino_atual)  # identifica novas pastas na estrutura atual
-if diretoriosparacriar_list != 0:
-    criardiretorios(path_destino_atual, diretoriosparacriar_list)  # cria novas pastas na estrutura atual
+# ## TRATAMENTO DE FOLDERS: clonando estrutura da fase anterior para a fase atual
+# diretorios_do_path_origem_atual = listardiretorios(path_origem_atual)  # listar estrutura de pasta da fase anterior
+# diretorios_da_path_destino_atual = listardiretorios(path_destino_atual)  # listar estrutura de pasta da fase atual
+# diretoriosparacriar_list = diretoriosparacriar(diretorios_do_path_origem_atual, diretorios_da_path_destino_atual)  # identifica novas pastas na estrutura atual
+# if diretoriosparacriar_list != 0:
+#     criardiretorios(path_destino_atual, diretoriosparacriar_list)  # cria novas pastas na estrutura atual
 
 ## TRATAMENTO DE ARQUIVOS
+print('----------')
 arquivosjaprocessadosnafaseatual_list = listaarquivosjaprocessadosnafaseatual(reportdafaseatual)  # lista arquivosjaprocessadosnafaseatual
+print('----------')
 arquivosprocessadosnafaseanterior_list = listaarquivosprocessadosnafaseanterior(reportdafaseanterior)  # listar arquivosprocessadosnafaseanterior
-arquivosparaprocessarnafaseatual_list = listaarquivosparaprocessarnafaseatual(arquivosprocessadosnafaseanterior_list, arquivosjaprocessadosnafaseatual_list, path_origem_atual, path_destino_atual)  # listar arquivosparaprocessarnafaseatual
+print('----------')
+arquivosparaprocessarnafaseatual_list = listaarquivosparaprocessarnafaseatual(arquivosprocessadosnafaseanterior_list, arquivosjaprocessadosnafaseatual_list, path_origem_atual, path_destino_atual, robo_path)  # listar arquivosparaprocessarnafaseatual
 
 n = 0
 e = 0
@@ -121,14 +120,14 @@ if len(arquivosparaprocessarnafaseatual_list) > 0:
     for id, origem, destino in arquivosparaprocessarnafaseatual_list:
         try:
             processamento(origem, destino, 'tentativa01')  # copiando arquivos (arquivosparaprocessarnafaseatual) da central dos robos para a temp_original (path_destino_atual)
-            action_list = [id, "", datetime.now(), 'robodospdfs', 'centraldenotas to temp_original', origem, destino]
+            action_list = [id, "", datetime.now(), 'robodospdfs', 'centraldenotas to temp_original', origem.replace(robo_path, ''), destino.replace(robo_path, '')]
             uploadingReport(action_list, reportdafaseatual)
             print(n, 'Processado item: ', id, 'serie: ', '')
             n += 1
         except:
             try:  # TENTANDO NOVAMENTE, MAS COM REDUCAO DO NOME DO DIRETORIO
                 processamento("\\\\?\\" + origem, "\\\\?\\" + destino, 'tentativa02')
-                action_list = [id, "",  datetime.now(), 'robodospdfs', 'centraldenotas to temp_original', origem, destino]
+                action_list = [id, "",  datetime.now(), 'robodospdfs', 'centraldenotas to temp_original', origem.replace(robo_path, ''), destino.replace(robo_path, '')]
                 uploadingReport(action_list, reportdafaseatual)
                 print(n, 'Processado item: ', id, 'serie: ', '')
                 n += 1
@@ -144,7 +143,7 @@ if len(arquivosparaprocessarnafaseatual_list) > 0:
 
                     processamento("\\\\?\\" + origem_curto, "\\\\?\\" + destino_curto, 'tentativa03')
 
-                    action_list = [id, "", datetime.now(), 'robodospdfs', 'centraldenotas to temp_original', origem, destino]
+                    action_list = [id, "", datetime.now(), 'robodospdfs', 'centraldenotas to temp_original', origem.replace(robo_path, ''), destino.replace(robo_path, '')]
                     uploadingReport(action_list, reportdafaseatual)
                     print(n, 'Processado item: ', id, 'serie: ', '')
                     n += 1
@@ -160,14 +159,14 @@ if len(arquivosparaprocessarnafaseatual_list) > 0:
                               "{filename}".format(filename=filename),
                               "/z"])
 
-                        action_list = [id, "", datetime.now(), 'robodospdfs', 'centraldenotas to temp_original', origem, destino]
+                        action_list = [id, "", datetime.now(), 'robodospdfs', 'centraldenotas to temp_original', origem.replace(robo_path, ''), destino.replace(robo_path, '')]
                         uploadingReport(action_list, reportdafaseatual)
                         print(n, 'Processado id: ', id, 'serie: ', '')
                         n += 1
                     except:
-                        action_list = [id, "", datetime.now(), 'robodospdfs', 'ERROR: centraldenotas to temp_original', origem, destino]
+                        action_list = [id, "", datetime.now(), 'robodospdfs', 'ERROR: centraldenotas to temp_original', origem.replace(robo_path, ''), destino.replace(robo_path, '')]
                         uploadingReportError(action_list, reportdosrobos_erros)
-                        print('ERROR: Report de erro dos robos atualizado com sucesso: ',  id, "diretorio: ", origem)
+                        print('ERROR: Report de erro dos robos atualizado com sucesso: ',  id, "diretorio: ", origem.replace(robo_path, ''))
                         e += 1
 else:
     print('Não há arquivos novos a serem copiados')

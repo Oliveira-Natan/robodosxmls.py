@@ -4,8 +4,7 @@ import shutil
 import time
 from datetime import datetime
 import pandas as pd
-import win32api
-from subprocess import call
+import getpass
 
 start = datetime.now()
 
@@ -18,7 +17,6 @@ def listardiretorios(path):
             listadediretorios.append(os.path.join(root_sem_prefixo, dir))  # raiz do diretorio + diretorio
     return listadediretorios
 
-
 def diretoriosparacriar(diretorios_do_path_origem_atual, diretorios_da_path_destino_atual):
     print('Iniciando criacao diretorios_da_path_destino_atual')
     diretorios_para_criar_list = []
@@ -29,7 +27,6 @@ def diretoriosparacriar(diretorios_do_path_origem_atual, diretorios_da_path_dest
     print('total de diretorios_para_criar_na_fase_atual: ', len(diretorios_para_criar_list))
     return diretorios_para_criar_list
 
-
 def criardiretorios(path_destino_atual, diretoriosparacriar_list):
     for diretoriosparacriar in diretoriosparacriar_list:
         nome_do_novo_diretorio = path_destino_atual + "\\" + diretoriosparacriar
@@ -37,7 +34,7 @@ def criardiretorios(path_destino_atual, diretoriosparacriar_list):
         print('Criado o diretorio: ', nome_do_novo_diretorio)
 
 def listararquivosnaspastas(path):
-    print('Iniciando listagem de arquivos arquivosnacentral')
+    print('Iniciando listagem de arquivos arquivosnacentraldoOneDrive')
     listadediretorios = []
     for root, dirs, files in os.walk(path):  # PARA cada raiz, diretorio, NO arvore gerada a partir do diretorio da central de notas
         files_list = []
@@ -47,7 +44,7 @@ def listararquivosnaspastas(path):
                 files_list.append(os.path.join(root, file))
                 listadediretorios.append(os.path.join(root, file))  # inclui na lista a raiz do diretorio + nome do arquivo
         # print(len(files_list), ";", root)
-    print('total de arquivosnacentral: ', len(listadediretorios))
+    print('total de arquivosnacentraldoOneDrive: ', len(listadediretorios))
     return listadediretorios
 
 def arquivosjacopiados(reportrobodospdfs):
@@ -83,26 +80,20 @@ def uploadingReportError(action_list, reportdosrobos_erros):
 
 
 # path and reports names
-onedrive_path = r'C:\Users\felipe.rosa\OneDrive - MCS MARKUP AUDITORIA E CONSULTORIA EMPRESARIAL LTDA\CentraldeNotas'
-# centraldosrobos_path = r'F:\robodepdfs\centraldosrobos'
-# temp_original_path = r'F:\robodepdfs\temp_original'
-# temp_individualizados_path = r'F:\robodepdfs\temp_individualizados'
-#
-# reportdosrobos_erros = r'F:\robodepdfs\reports\errosdosrobos.csv'
-# report_robodoonedrive = r'F:\robodepdfs\reports\robodoonedrive.csv'
-# report_robodospdfs = r'F:\robodepdfs\reports\robodospdfs.csv'
-# report_robodeindividualizacao = r'F:\robodepdfs\reports\robodeindividualizacao.csv'
+username = getpass.getuser()
+onedrive_path = r'C:\Users\{}\OneDrive - MCS MARKUP AUDITORIA E CONSULTORIA EMPRESARIAL LTDA\CentraldeNotas'.format(username)
+robo_path = r'C:\Users\{}\Desktop\rede\robodepdfs'.format(username)
 
-centraldosrobos_path = r'C:\Users\felipe.rosa\Desktop\rede\robodepdfs\centraldosrobos'
-temp_original_path = r'C:\Users\felipe.rosa\Desktop\rede\robodepdfs\temp_original'
-temp_individualizados_path = r'C:\Users\felipe.rosa\Desktop\rede\robodepdfs\temp_individualizados'
-temp_enviados_path = r'C:\Users\felipe.rosa\Desktop\rede\robodepdfs\temp_enviados'
+centraldosrobos_path = r'{}\centraldosrobos'.format(robo_path)
+temp_original_path = r'{}\temp_original'.format(robo_path)
+temp_individualizados_path = r'{}\temp_individualizados'.format(robo_path)
+temp_enviados_path = r'{}\temp_enviados'.format(robo_path)
 
-reportdosrobos_erros = r'C:\Users\felipe.rosa\Desktop\rede\robodepdfs\reports\errosdosrobos.csv'
-report_robodoonedrive = r'C:\Users\felipe.rosa\Desktop\rede\robodepdfs\reports\robodoonedrive.csv'
-report_robodospdfs = r'C:\Users\felipe.rosa\Desktop\rede\robodepdfs\reports\robodospdfs.csv'
-report_robodeindividualizacao = r'C:\Users\felipe.rosa\Desktop\rede\robodepdfs\reports\robodeindividualizacao.csv'
-report_robodosemailsparaarquivei = r'C:\Users\felipe.rosa\Desktop\rede\robodepdfs\reports\robodosemails.csv'
+reportdosrobos_erros = r'{}\reports\errosdosrobos.csv'.format(robo_path)
+report_robodoonedrive = r'{}\reports\robodoonedrive.csv'.format(robo_path)
+report_robodospdfs = r'{}\reports\robodospdfs.csv'.format(robo_path)
+report_robodeindividualizacao = r'{}\reports\robodeindividualizacao.csv'.format(robo_path)
+report_robodosemailsparaarquivei = r'{}\reports\robodosemails.csv'.format(robo_path)
 
 path_origem_atual = onedrive_path
 path_destino_atual = centraldosrobos_path
@@ -120,8 +111,11 @@ if diretoriosparacriar_list != 0:
 
 ## TRATAMENTO DE ARQUIVOS
 # Listando arquivos na Central do OneDrive
+print('----------')
 arquivosdoonedrive_list = listararquivosnaspastas(path_origem_atual)  # listar arquivos na Central de Notas do OneDrive
+print('----------')
 arquivosjacopiados_list = arquivosjacopiados(reportdafaseatual)
+print('----------')
 robodoonedrive_report_list = arquivosjacopiados_list[0]  # listando arquivos já registrados no report
 ultimo_id_do_report = arquivosjacopiados_list[1]  # pegando o último id já registrado no report do robodoonedrive
 

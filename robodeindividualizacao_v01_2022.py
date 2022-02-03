@@ -1,23 +1,26 @@
 import time
-
 from PyPDF2 import PdfFileReader, PdfFileWriter
 import os.path
-import shutil
 from datetime import datetime
 import pandas as pd
 import win32api
 from subprocess import call
+import pikepdf
+import getpass
 
 start = datetime.now()
+
 
 def listardiretorios(path):
     listadediretorios = []
     print('Iniciando listagem de diretorios')
-    for root, dirs, files in os.walk(path):  # PARA cada raiz, diretorio, NO arvore gerada a partir do diretorio da central de notas
+    for root, dirs, files in os.walk(
+            path):  # PARA cada raiz, diretorio, NO arvore gerada a partir do diretorio da central de notas
         root_sem_prefixo = root.replace(str(path), "")
         for dir in dirs:  # PARA cada diretorio na lista de diretorios
             listadediretorios.append(os.path.join(root_sem_prefixo, dir))  # raiz do diretorio + diretorio
     return listadediretorios
+
 
 def diretoriosparacriar(diretorios_do_path_origem_atual, diretorios_da_path_destino_atual):
     print('Iniciando criacao diretorios_da_path_destino_atual')
@@ -29,34 +32,41 @@ def diretoriosparacriar(diretorios_do_path_origem_atual, diretorios_da_path_dest
     print('total de diretorios_para_criar_na_fase_atual: ', len(diretorios_para_criar_list))
     return diretorios_para_criar_list
 
+
 def criardiretorios(path_destino_atual, diretoriosparacriar_list):
     for diretoriosparacriar in diretoriosparacriar_list:
         nome_do_novo_diretorio = path_destino_atual + "\\" + diretoriosparacriar
         os.makedirs(nome_do_novo_diretorio)
         print('Criado o diretorio: ', nome_do_novo_diretorio)
 
+
 def listaarquivosjaprocessadosnafaseatual(reportdafaseatual):
     print('Iniciando listagem de listaarquivosjaprocessadosnafaseatual')
     df = pd.read_csv(reportdafaseatual)
-    arquivosjaprocessadosnafaseatual_list = df['path'].to_list()  # quero a coluna do report onde registrei a origem do que já copiei da central de notas
+    arquivosjaprocessadosnafaseatual_list = df[
+        'path'].to_list()  # quero a coluna do report onde registrei a origem do que já copiei da central de notas
     print('total de listaarquivosjaprocessadosnafaseatual: ', len(arquivosjaprocessadosnafaseatual_list))
     return arquivosjaprocessadosnafaseatual_list
+
 
 def listaarquivosprocessadosnafaseanterior(reportdafaseanterior):
     print('Iniciando listagem de listaarquivosprocessadosnafaseanterior')
     df = pd.read_csv(reportdafaseanterior)
-    arquivosprocessadosnafaseanterior_list = df.loc[:, ['id', 'destiny']].values.tolist()  # quero a coluna do report do onedrive onde registrei o destino da copia na central
-    print('total de listaarquivosjaprocessadosnafaseatual: ', len(arquivosprocessadosnafaseanterior_list))
+    arquivosprocessadosnafaseanterior_list = df.loc[:, ['id',
+                                                        'destiny']].values.tolist()  # quero a coluna do report do onedrive onde registrei o destino da copia na central
+    print('total de listaarquivosprocessadosnafaseanterior: ', len(arquivosprocessadosnafaseanterior_list))
     return arquivosprocessadosnafaseanterior_list
+
 
 def listaarquivosparaprocessarnafaseatual(arquivosprocessadosnafaseanterior_list, arquivosjaprocessadosnafaseatual_list, path_origem_atual, path_destino_atual):
     print('Iniciando listagem de listaarquivosparaprocessarnafaseatual')
     path_files_to_copy = []
     for id, item in arquivosprocessadosnafaseanterior_list:
         if item not in arquivosjaprocessadosnafaseatual_list:
-            path_files_to_copy.append([id, item, item.replace(path_origem_atual, path_destino_atual)]) # id, origem, destino
+            path_files_to_copy.append([id, item, item.replace('temp_original', 'temp_individualizados')])  # id, origem, destino
     print('total de listaarquivosparaprocessarnafaseatual: ', len(path_files_to_copy))
     return path_files_to_copy
+
 
 def processamento(origem, destino, path_destino_atual, tentativa):
     print('iniciando ', tentativa)
@@ -66,8 +76,24 @@ def processamento(origem, destino, path_destino_atual, tentativa):
             try:
                 number_of_pages = PdfFileReader(pdf_file, strict=False).getNumPages()  # get number of pages from pdf
             except:
-                pdf_file.close()  # closing file and adjusting file with EOF error
+                number_of_pages = PdfFileReader(pdf_file, strict=False)  # get number of pages from pdf
+                if number_of_pages.isEncrypted:
+                    print('tentando decriptografar')
+                    # try:
+                    pdf_file.close()  # closing file and adjusting file with EOF error
+                    pdf = pikepdf.open(path_original_and_filename, allow_overwriting_input=True)
+                    pdf.save(path_original_and_filename)
+                    print('Now is unencrypted')
+                    # with open(path_original_and_filename, 'rb') as pdf_file:  # read file as pdf_file
+                    #     number_of_pages = PdfFileReader(pdf_file, strict=False).getNumPages()  # get number of pages from pdf
+                else:
+                    pdf_file.close()  # closing file and adjusting file with EOF error
 
+        with open(path_original_and_filename, 'rb') as pdf_file:  # read file as pdf_file
+            try:
+                number_of_pages = PdfFileReader(pdf_file, strict=False).getNumPages()  # get number of pages from pdf
+            except:
+                pdf_file.close()  # closing file and adjusting file with EOF error
                 def reset_eof_of_pdf_return_stream(pdf_stream_in: list):
                     # find the line position of the EOF
                     for i, x in enumerate(txt[::-1]):
@@ -91,43 +117,35 @@ def processamento(origem, destino, path_destino_atual, tentativa):
                 with open(path_original_and_filename, 'rb') as pdf_file:  # read file as pdf_file
                     number_of_pages = PdfFileReader(pdf_file).getNumPages()  # get number of pages from pdf
 
-            arquivos_criados_ou_movidos_list = []
-            if number_of_pages > 1:  # if more than 01 page, then try to split and delete original on temp_original
-                file_base_name = origem.split("\\")[-1].replace('.PDF', '').replace('.pdf', '')  # getting pdf name
-                pdf = PdfFileReader(path_original_and_filename, strict=False)
-                destino = os.path.dirname(os.path.abspath(destino))
-                for page_number in range(pdf.getNumPages()):  # for each page of this pdf
-                    pdfWriter = PdfFileWriter()
-                    pdfWriter.addPage(pdf.getPage(page_number))
-                    new_pdf_name = os.path.join(destino, '{0}_page{1}.pdf'.format(file_base_name, page_number + 1))
-                    with open(new_pdf_name, 'wb') as new_pdf:  # save new pdf for this page
-                        pdfWriter.write(new_pdf)
-                        new_pdf.close()
-                        arquivos_criados_ou_movidos_list.append(new_pdf_name)
-                        # print('Criado from temp_original to temp_individualizados: ', new_pdf_name)
-                pdf_file.close()
-                # os.remove(path_original_and_filename)
-                return arquivos_criados_ou_movidos_list
-            else:  # if do not have more than 01 page, then create this file on temp_individualizados and delete original on temp_original
-                pdf = PdfFileReader(pdf_file, strict=False)  # lendo o pdf e incluindo numa variavel pdfWriter
+    arquivos_criados_ou_movidos_list = []
+    if number_of_pages > 1:  # if more than 01 page, then try to split and delete original on temp_original
+        with open(path_original_and_filename, 'rb') as pdf_file:  # read file as pdf_file
+            file_base_name = origem.split("\\")[-1].replace('.PDF', '').replace('.pdf', '')  # getting pdf name
+            pdf = PdfFileReader(path_original_and_filename, strict=False)
+            destino = os.path.dirname(os.path.abspath(destino))
+            for page_number in range(pdf.getNumPages()):  # for each page of this pdf
                 pdfWriter = PdfFileWriter()
-                pdfWriter.addPage(pdf.getPage(0))
-                with open(destino, 'wb') as new_pdf:  # criando pdf vazio no destino
-                    pdfWriter.write(new_pdf)  # salvando pdfWriter no pdf vazio criado no destino
+                pdfWriter.addPage(pdf.getPage(page_number))
+                new_pdf_name = os.path.join(destino, '{0}_page{1}.pdf'.format(file_base_name, page_number + 1))
+                with open(new_pdf_name, 'wb') as new_pdf:  # save new pdf for this page
+                    pdfWriter.write(new_pdf)
                     new_pdf.close()
-                    arquivos_criados_ou_movidos_list.append(destino)  # inserindo "destino" em lista para identificacao de serie
-                    # print('Criado from temp_original to temp_individualizados: ', destino)
-                pdf_file.close()
-                # os.remove(path_original_and_filename)
-                return arquivos_criados_ou_movidos_list
-                #
-                #
-                #
-                # pdf_file.close()
-                # arquivos_criados_ou_movidos_list.append(destino)
-                # shutil.copy(origem, destino)
-                # print('Moved from temp_original to temp_individualizados: ', path_destino_atual + "\\" + origem)
-                # return arquivos_criados_ou_movidos_list
+                    arquivos_criados_ou_movidos_list.append(new_pdf_name)
+            pdf_file.close()
+            return arquivos_criados_ou_movidos_list
+    else:  # if do not have more than 01 page, then create this file on temp_individualizados and delete original on temp_original
+        with open(path_original_and_filename, 'rb') as pdf_file:  # read file as pdf_file
+            pdf = PdfFileReader(pdf_file, strict=False)  # lendo o pdf e incluindo numa variavel pdfWriter
+            pdfWriter = PdfFileWriter()
+            pdfWriter.addPage(pdf.getPage(0))
+            with open(destino, 'wb') as new_pdf:  # criando pdf vazio no destino
+                pdfWriter.write(new_pdf)  # salvando pdfWriter no pdf vazio criado no destino
+                new_pdf.close()
+                arquivos_criados_ou_movidos_list.append(
+                    destino)  # inserindo "destino" em lista para identificacao de serie
+            pdf_file.close()
+            return arquivos_criados_ou_movidos_list
+
 
 def uploadingReport(action_list, reportdafaseatual):
     robo_data = pd.read_csv(reportdafaseatual)
@@ -136,35 +154,29 @@ def uploadingReport(action_list, reportdafaseatual):
     robo_data.to_csv(reportdafaseatual, index=False)  # salvando report
     time.sleep(1)
 
+
 def uploadingReportError(action_list, reportdosrobos_erros):
     robo_data_error = pd.read_csv(reportdosrobos_erros)
     action_list = pd.Series(action_list, index=robo_data_error.columns)  # convertendo lista de acao em serie
     robo_data_error = robo_data_error.append(action_list, ignore_index=True)  # appending serie no report
     robo_data_error.to_csv(reportdosrobos_erros, index=False)  # salvando report
 
+
 # path and reports names
-onedrive_path = r'C:\Users\felipe.rosa\OneDrive - MCS MARKUP AUDITORIA E CONSULTORIA EMPRESARIAL LTDA\CentraldeNotas'
-# centraldosrobos_path = r'F:\robodepdfs\centraldosrobos'
-# temp_original_path = r'F:\robodepdfs\temp_original'
-# temp_individualizados_path = r'F:\robodepdfs\temp_individualizados'
-# temp_enviados_path = r'F:\robodepdfs\temp_enviados'
-#
-# reportdosrobos_erros = r'F:\robodepdfs\reports\errosdosrobos.csv'
-# report_robodoonedrive = r'F:\robodepdfs\reports\robodoonedrive.csv'
-# report_robodospdfs = r'F:\robodepdfs\reports\robodospdfs.csv'
-# report_robodeindividualizacao = r'F:\robodepdfs\reports\robodeindividualizacao.csv'
-# report_robodosemailsparaarquivei = r'F:\robodepdfs\reports\robodosemails.csv'
+username = getpass.getuser()
+onedrive_path = r'C:\Users\{}\OneDrive - MCS MARKUP AUDITORIA E CONSULTORIA EMPRESARIAL LTDA\CentraldeNotas'.format(username)
+robo_path = r'C:\Users\{}\Desktop\rede\robodepdfs'.format(username)
 
-centraldosrobos_path = r'C:\Users\felipe.rosa\Desktop\rede\robodepdfs\centraldosrobos'
-temp_original_path = r'C:\Users\felipe.rosa\Desktop\rede\robodepdfs\temp_original'
-temp_individualizados_path = r'C:\Users\felipe.rosa\Desktop\rede\robodepdfs\temp_individualizados'
-temp_enviados_path = r'C:\Users\felipe.rosa\Desktop\rede\robodepdfs\temp_enviados'
+centraldosrobos_path = r'{}\centraldosrobos'.format(robo_path)
+temp_original_path = r'{}\temp_original'.format(robo_path)
+temp_individualizados_path = r'{}\temp_individualizados'.format(robo_path)
+temp_enviados_path = r'{}\temp_enviados'.format(robo_path)
 
-reportdosrobos_erros = r'C:\Users\felipe.rosa\Desktop\rede\robodepdfs\reports\errosdosrobos.csv'
-report_robodoonedrive = r'C:\Users\felipe.rosa\Desktop\rede\robodepdfs\reports\robodoonedrive.csv'
-report_robodospdfs = r'C:\Users\felipe.rosa\Desktop\rede\robodepdfs\reports\robodospdfs.csv'
-report_robodeindividualizacao = r'C:\Users\felipe.rosa\Desktop\rede\robodepdfs\reports\robodeindividualizacao.csv'
-report_robodosemailsparaarquivei = r'C:\Users\felipe.rosa\Desktop\rede\robodepdfs\reports\robodosemails.csv'
+reportdosrobos_erros = r'{}\reports\errosdosrobos.csv'.format(robo_path)
+report_robodoonedrive = r'{}\reports\robodoonedrive.csv'.format(robo_path)
+report_robodospdfs = r'{}\reports\robodospdfs.csv'.format(robo_path)
+report_robodeindividualizacao = r'{}\reports\robodeindividualizacao.csv'.format(robo_path)
+report_robodosemailsparaarquivei = r'{}\reports\robodosemails.csv'.format(robo_path)
 
 reportdafaseanterior = report_robodospdfs
 reportdafaseatual = report_robodeindividualizacao
@@ -174,13 +186,17 @@ path_destino_atual = temp_individualizados_path
 ## TRATAMENTO DE FOLDERS: clonando estrutura da fase anterior para a fase atual
 diretorios_do_path_origem_atual = listardiretorios(path_origem_atual)  # listar estrutura de pasta da fase anterior
 diretorios_da_path_destino_atual = listardiretorios(path_destino_atual)  # listar estrutura de pasta da fase atual
-diretoriosparacriar_list = diretoriosparacriar(diretorios_do_path_origem_atual, diretorios_da_path_destino_atual)  # identifica novas pastas na estrutura atual
+diretoriosparacriar_list = diretoriosparacriar(diretorios_do_path_origem_atual,
+                                               diretorios_da_path_destino_atual)  # identifica novas pastas na estrutura atual
 if diretoriosparacriar_list != 0:
     criardiretorios(path_destino_atual, diretoriosparacriar_list)  # cria novas pastas na estrutura atual
 
 ## TRATAMENTO DE ARQUIVOS
+print('----------')
 arquivosjaprocessadosnafaseatual_list = listaarquivosjaprocessadosnafaseatual(reportdafaseatual)  # lista arquivosjaprocessadosnafaseatual
+print('----------')
 arquivosprocessadosnafaseanterior_list = listaarquivosprocessadosnafaseanterior(reportdafaseanterior)  # listar arquivosprocessadosnafaseanterior
+print('----------')
 arquivosparaprocessarnafaseatual_list = listaarquivosparaprocessarnafaseatual(arquivosprocessadosnafaseanterior_list, arquivosjaprocessadosnafaseatual_list, path_origem_atual, path_destino_atual)  # listar arquivosparaprocessarnafaseatual
 # print(arquivosparaprocessarnafaseatual_list)
 
@@ -189,11 +205,13 @@ e = 0
 if len(arquivosparaprocessarnafaseatual_list) > 0:
     # iniciar copia
     for id, origem, destino in arquivosparaprocessarnafaseatual_list:
+        origem = robo_path + origem
+        destino = robo_path + destino
         try:
             arquivos_criados_ou_movidos_list = processamento(origem, destino, path_destino_atual, 'tentativa01')  # copiando arquivos (arquivosparaprocessarnafaseatual) da central dos robos para a temp_original (path_destino_atual)
             serie = 1
             for arquivos_criados_ou_movidos in arquivos_criados_ou_movidos_list:
-                action_list = [id, serie, datetime.now(), 'robodeindividualizacao', 'temp_original to temp_individualizados', origem, arquivos_criados_ou_movidos]
+                action_list = [id, serie, datetime.now(), 'robodeindividualizacao', 'temp_original to temp_individualizados', origem.replace(robo_path, ''), arquivos_criados_ou_movidos.replace(robo_path, '')]
                 uploadingReport(action_list, reportdafaseatual)
                 print(n, 'Processado id: ', id, 'serie: ', serie)
                 serie += 1
@@ -203,7 +221,9 @@ if len(arquivosparaprocessarnafaseatual_list) > 0:
                 arquivos_criados_ou_movidos_list = processamento("\\\\?\\" + origem, "\\\\?\\" + destino, path_destino_atual, 'tentativa02')
                 serie = 1
                 for arquivos_criados_ou_movidos in arquivos_criados_ou_movidos_list:
-                    action_list = [id, serie, datetime.now(), 'robodeindividualizacao', 'temp_original to temp_individualizados', origem, arquivos_criados_ou_movidos]
+                    action_list = [id, serie, datetime.now(), 'robodeindividualizacao',
+                                   'temp_original to temp_individualizados', origem.replace(robo_path, ''),
+                                   arquivos_criados_ou_movidos.replace(robo_path, '')]
                     uploadingReport(action_list, reportdafaseatual)
                     print(n, 'Processado id: ', id, 'serie: ', serie)
                     serie += 1
@@ -221,15 +241,15 @@ if len(arquivosparaprocessarnafaseatual_list) > 0:
                     arquivos_criados_ou_movidos_list = processamento("\\\\?\\" + origem_curto, "\\\\?\\" + destino_curto, path_destino_atual, 'tentativa03')
                     serie = 1
                     for arquivos_criados_ou_movidos in arquivos_criados_ou_movidos_list:
-                        action_list = [id, serie, datetime.now(), 'robodeindividualizacao', 'temp_original to temp_individualizados', origem, arquivos_criados_ou_movidos]
+                        action_list = [id, serie, datetime.now(), 'robodeindividualizacao', 'temp_original to temp_individualizados', origem.replace(robo_path, ''), arquivos_criados_ou_movidos.replace(robo_path, '')]
                         uploadingReport(action_list, reportdafaseatual)
                         print(n, 'Processado id: ', id, 'serie: ', serie)
                         serie += 1
                     n += 1
                 except:
-                    action_list = [id, "", datetime.now(), 'robodeindividualizacao', 'ERROR: temp_original to temp_individualizados', origem, destino]
+                    action_list = [id, "", datetime.now(), 'robodeindividualizacao', 'ERROR: temp_original to temp_individualizados', origem.replace(robo_path, ''), destino.replace(robo_path, '')]
                     uploadingReportError(action_list, reportdosrobos_erros)
-                    print('ERROR: Report de erro dos robos atualizado com sucesso: ', id, "diretorio: ", origem)
+                    print('ERROR: Report de erro dos robos atualizado com sucesso: ', id, "diretorio: ", origem.replace(robo_path, ''))
                     e += 1
 else:
     print('Não há arquivos novos a serem copiados')
@@ -239,7 +259,7 @@ print('Total de arquivos novos copiados para o report: ', n)
 print('Total de erros: ', e)
 
 end = datetime.now()
-print('Time running: ', end-start)
+print('Time running: ', end - start)
 
 # start = datetime.now()
 # def uploadingReport(action_list, reportrobodeindividualizacao):
