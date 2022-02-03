@@ -147,7 +147,7 @@ for arquivosnaocopiados_comsufixodacentral in arquivosnaocopiados_comsufixodacen
         destino = os.path.dirname(os.path.abspath(arquivosnaocopiados_comsufixodacentral))
         copyingfiles(arquivo_do_onedrive, destino, 'tentativa01')
         id += 1
-        action_list = [id, "", datetime.now(), 'robodoonedrive', 'onedrive to centraldenotas', arquivo_do_onedrive.replace(path_origem_atual, ''), arquivosnaocopiados_comsufixodacentral.replace(robo_path, '')]
+        action_list = [id, "", datetime.now(), 'robodoonedrive', 'onedrive to centraldenotas', arquivo_do_onedrive.replace(path_origem_atual, '').replace("\\?\\", "").replace("\\\\", "\\"), arquivosnaocopiados_comsufixodacentral.replace(robo_path, '').replace("\\?\\", "").replace("\\\\", "\\")]
         uploadingReport(action_list, reportdafaseatual)
         print(n, 'Processado id: ', id, 'serie: ', '')
         n += 1
@@ -156,7 +156,7 @@ for arquivosnaocopiados_comsufixodacentral in arquivosnaocopiados_comsufixodacen
             destino = os.path.dirname(os.path.abspath(arquivosnaocopiados_comsufixodacentral))
             copyingfiles("\\\\?\\" + arquivo_do_onedrive, "\\\\?\\" + destino, 'tentativa02')
             id += 1
-            action_list = [id, "", datetime.now(), 'robodoonedrive', 'onedrive to centraldenotas',arquivo_do_onedrive.replace(path_origem_atual, ''), arquivosnaocopiados_comsufixodacentral.replace(robo_path, '')]
+            action_list = [id, "", datetime.now(), 'robodoonedrive', 'onedrive to centraldenotas',arquivo_do_onedrive.replace(path_origem_atual, '').replace("\\?\\", "").replace("\\\\", "\\"), arquivosnaocopiados_comsufixodacentral.replace(robo_path, '').replace("\\?\\", "").replace("\\\\", "\\")]
             uploadingReport(action_list, reportdafaseatual)
             print(n, 'Processado id: ', id, 'serie: ', '')
             n += 1
@@ -172,7 +172,7 @@ for arquivosnaocopiados_comsufixodacentral in arquivosnaocopiados_comsufixodacen
 
                 copyingfiles("\\\\?\\" + arquivo_do_onedrive_curto, "\\\\?\\" + destino_curto, 'tentativa03')
                 id += 1
-                action_list = [id, "", datetime.now(), 'robodoonedrive', 'onedrive to centraldenotas', arquivo_do_onedrive.replace(path_origem_atual, ''), arquivosnaocopiados_comsufixodacentral.replace(robo_path, '')]
+                action_list = [id, "", datetime.now(), 'robodoonedrive', 'onedrive to centraldenotas', arquivo_do_onedrive.replace(path_origem_atual, '').replace("\\?\\", "").replace("\\\\", "\\"), arquivosnaocopiados_comsufixodacentral.replace(robo_path, '').replace("\\?\\", "").replace("\\\\", "\\")]
                 uploadingReport(action_list, reportdafaseatual)
                 print(n, 'Processado id: ', id, 'serie: ', '')
                 n += 1
@@ -189,14 +189,14 @@ for arquivosnaocopiados_comsufixodacentral in arquivosnaocopiados_comsufixodacen
                           "/z"])
 
                     id += 1
-                    action_list = [id, "", datetime.now(), 'robodoonedrive', 'onedrive to centraldenotas', arquivo_do_onedrive.replace(path_origem_atual, ''), arquivosnaocopiados_comsufixodacentral.replace(robo_path, '')]
+                    action_list = [id, "", datetime.now(), 'robodoonedrive', 'onedrive to centraldenotas', arquivo_do_onedrive.replace(path_origem_atual, '').replace("\\?\\", "").replace("\\\\", "\\"), arquivosnaocopiados_comsufixodacentral.replace(robo_path, '').replace("\\?\\", "").replace("\\\\", "\\")]
                     uploadingReport(action_list, reportdafaseatual)
                     print(n, 'Processado id: ', id, 'serie: ', '')
                     n += 1
                 except:
-                    action_list = [id, "", datetime.now(), 'robodoonedrive', 'ERROR: onedrive to centraldenotas', arquivo_do_onedrive, arquivosnaocopiados_comsufixodacentral.replace(robo_path, '')]
+                    action_list = [id, "", datetime.now(), 'robodoonedrive', 'ERROR: onedrive to centraldenotas', arquivo_do_onedrive.replace(path_origem_atual, '').replace("\\?\\", "").replace("\\\\", "\\"), arquivosnaocopiados_comsufixodacentral.replace(robo_path, '').replace("\\?\\", "").replace("\\\\", "\\")]
                     uploadingReportError(action_list, reportdosrobos_erros)
-                    print('ERROR: Report de erro dos robos atualizado com sucesso: ', id, "diretorio: ", arquivo_do_onedrive)
+                    print('ERROR: Report de erro dos robos atualizado com sucesso: ', id, "diretorio: ", arquivo_do_onedrive.replace(path_origem_atual, '').replace("\\?\\", "").replace("\\\\", "\\"))
                     e += 1
 print('Total de arquivos no onedrive: ', len(arquivosdoonedrive_list))
 print('Total de arquivos antigos no report: ', ultimo_id_do_report)

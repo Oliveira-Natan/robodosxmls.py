@@ -205,13 +205,18 @@ e = 0
 if len(arquivosparaprocessarnafaseatual_list) > 0:
     # iniciar copia
     for id, origem, destino in arquivosparaprocessarnafaseatual_list:
+        if "\\?\\" in origem:
+            origem = origem.replace("\\?\\", "").replace("\\\\", "\\")
+
+        if "\\?\\" in destino:
+            destino = destino.replace("\\?\\", "").replace("\\\\", "\\")
         origem = robo_path + origem
         destino = robo_path + destino
         try:
             arquivos_criados_ou_movidos_list = processamento(origem, destino, path_destino_atual, 'tentativa01')  # copiando arquivos (arquivosparaprocessarnafaseatual) da central dos robos para a temp_original (path_destino_atual)
             serie = 1
             for arquivos_criados_ou_movidos in arquivos_criados_ou_movidos_list:
-                action_list = [id, serie, datetime.now(), 'robodeindividualizacao', 'temp_original to temp_individualizados', origem.replace(robo_path, ''), arquivos_criados_ou_movidos.replace(robo_path, '')]
+                action_list = [id, serie, datetime.now(), 'robodeindividualizacao', 'temp_original to temp_individualizados', origem.replace(robo_path, '').replace("\\?\\", "").replace("\\\\", "\\"), arquivos_criados_ou_movidos.replace(robo_path, '').replace("\\?\\", "").replace("\\\\", "\\")]
                 uploadingReport(action_list, reportdafaseatual)
                 print(n, 'Processado id: ', id, 'serie: ', serie)
                 serie += 1
@@ -222,8 +227,7 @@ if len(arquivosparaprocessarnafaseatual_list) > 0:
                 serie = 1
                 for arquivos_criados_ou_movidos in arquivos_criados_ou_movidos_list:
                     action_list = [id, serie, datetime.now(), 'robodeindividualizacao',
-                                   'temp_original to temp_individualizados', origem.replace(robo_path, ''),
-                                   arquivos_criados_ou_movidos.replace(robo_path, '')]
+                                   'temp_original to temp_individualizados', origem.replace(robo_path, '').replace("\\?\\", "").replace("\\\\", "\\"), arquivos_criados_ou_movidos.replace(robo_path, '').replace("\\?\\", "").replace("\\\\", "\\")]
                     uploadingReport(action_list, reportdafaseatual)
                     print(n, 'Processado id: ', id, 'serie: ', serie)
                     serie += 1
@@ -241,15 +245,15 @@ if len(arquivosparaprocessarnafaseatual_list) > 0:
                     arquivos_criados_ou_movidos_list = processamento("\\\\?\\" + origem_curto, "\\\\?\\" + destino_curto, path_destino_atual, 'tentativa03')
                     serie = 1
                     for arquivos_criados_ou_movidos in arquivos_criados_ou_movidos_list:
-                        action_list = [id, serie, datetime.now(), 'robodeindividualizacao', 'temp_original to temp_individualizados', origem.replace(robo_path, ''), arquivos_criados_ou_movidos.replace(robo_path, '')]
+                        action_list = [id, serie, datetime.now(), 'robodeindividualizacao', 'temp_original to temp_individualizados', origem.replace(robo_path, '').replace("\\?\\", "").replace("\\\\", "\\"), arquivos_criados_ou_movidos.replace(robo_path, '').replace("\\?\\", "").replace("\\\\", "\\")]
                         uploadingReport(action_list, reportdafaseatual)
                         print(n, 'Processado id: ', id, 'serie: ', serie)
                         serie += 1
                     n += 1
                 except:
-                    action_list = [id, "", datetime.now(), 'robodeindividualizacao', 'ERROR: temp_original to temp_individualizados', origem.replace(robo_path, ''), destino.replace(robo_path, '')]
+                    action_list = [id, "", datetime.now(), 'robodeindividualizacao', 'ERROR: temp_original to temp_individualizados', origem.replace(robo_path, '').replace("\\?\\", "").replace("\\\\", "\\"), destino.replace(robo_path, '').replace("\\?\\", "").replace("\\\\", "\\")]
                     uploadingReportError(action_list, reportdosrobos_erros)
-                    print('ERROR: Report de erro dos robos atualizado com sucesso: ', id, "diretorio: ", origem.replace(robo_path, ''))
+                    print('ERROR: Report de erro dos robos atualizado com sucesso: ', id, "diretorio: ", origem.replace(robo_path, '').replace("\\?\\", "").replace("\\\\", "\\"))
                     e += 1
 else:
     print('Não há arquivos novos a serem copiados')

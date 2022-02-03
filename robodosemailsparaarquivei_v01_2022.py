@@ -97,12 +97,12 @@ def enviar_email(origem, destino, path_destino_atual, id, serie, tentativa):
     email["To"] = EMAIL_DESTINATARIO
     email["Subject"] = assunto_email
 
-    # Log in to server using secure context and send email
-    context = ssl.create_default_context()
-    with SMTP("smtp.office365.com", 587) as server:
-        server.starttls(context=context)
-        server.login(EMAIL_REMETENTE, SENHA_REMETENTE)
-        server.sendmail(EMAIL_REMETENTE, EMAIL_DESTINATARIO, email.as_string())
+    # # Log in to server using secure context and send email
+    # context = ssl.create_default_context()
+    # with SMTP("smtp.office365.com", 587) as server:
+    #     server.starttls(context=context)
+    #     server.login(EMAIL_REMETENTE, SENHA_REMETENTE)
+    #     server.sendmail(EMAIL_REMETENTE, EMAIL_DESTINATARIO, email.as_string())
     print(f"enviado por email: {assunto_email}")
     return assunto_email
 
@@ -197,12 +197,17 @@ pdfs_enviados_list = []
 if len(arquivosparaprocessarnafaseatual_list) > 0:
     # iniciar copia
     for id, serie, origem, destino in arquivosparaprocessarnafaseatual_list:
+        if "\\?\\" in origem:
+            origem = origem.replace("\\?\\", "").replace("\\\\", "\\")
+
+        if "\\?\\" in destino:
+            destino = destino.replace("\\?\\", "").replace("\\\\", "\\")
         origem = robo_path + origem
         destino = robo_path + destino
         try:
             assunto_email = enviar_email(origem, destino, path_destino_atual, id, serie, 'tentativa01')  # copiando arquivos (arquivosparaprocessarnafaseatual) da central dos robos para a temp_original (path_destino_atual)
             processamento(origem, destino)  # copiando arquivos (arquivosparaprocessarnafaseatual) da central dos robos para a temp_original (path_destino_atual)
-            action_list = [id, serie, datetime.now(), 'robodosemails', 'individualizados to enviados', origem.replace(robo_path, ''), destino.replace(robo_path, '')]
+            action_list = [id, serie, datetime.now(), 'robodosemails', 'individualizados to enviados', origem.replace(robo_path, '').replace("\\?\\", "").replace("\\\\", "\\"), destino.replace(robo_path, '').replace("\\?\\", "").replace("\\\\", "\\")]
             uploadingReport(action_list, reportdafaseatual)
             pdfs_enviados_list.append(assunto_email)
             print(n, 'Processado item: ', id, 'serie: ', serie)
@@ -211,7 +216,7 @@ if len(arquivosparaprocessarnafaseatual_list) > 0:
             try:  # TENTANDO NOVAMENTE, MAS COM REDUCAO DO NOME DO DIRETORIO
                 assunto_email = enviar_email("\\\\?\\" + origem, "\\\\?\\" + destino, path_destino_atual, id, serie, 'tentativa02')  # copiando arquivos (arquivosparaprocessarnafaseatual) da central dos robos para a temp_original (path_destino_atual)
                 processamento("\\\\?\\" + origem, "\\\\?\\" + destino)
-                action_list = [id, serie, datetime.now(), 'robodosemails', 'individualizados to enviados', origem.replace(robo_path, ''), destino.replace(robo_path, '')]
+                action_list = [id, serie, datetime.now(), 'robodosemails', 'individualizados to enviados', origem.replace(robo_path, '').replace("\\?\\", "").replace("\\\\", "\\"), destino.replace(robo_path, '').replace("\\?\\", "").replace("\\\\", "\\")]
                 uploadingReport(action_list, reportdafaseatual)
                 pdfs_enviados_list.append(assunto_email)
                 print(n, 'Processado item: ', id, 'serie: ', serie)
@@ -229,15 +234,15 @@ if len(arquivosparaprocessarnafaseatual_list) > 0:
                     assunto_email = enviar_email("\\\\?\\" + origem_curto, "\\\\?\\" + destino_curto, path_destino_atual, id, serie, 'tentativa03')  # copiando arquivos (arquivosparaprocessarnafaseatual) da central dos robos para a temp_original (path_destino_atual)
                     processamento("\\\\?\\" + origem_curto, "\\\\?\\" + destino_curto)
 
-                    action_list = [id, serie, datetime.now(), 'robodosemails', 'individualizados to enviados', origem.replace(robo_path, ''), destino.replace(robo_path, '')]
+                    action_list = [id, serie, datetime.now(), 'robodosemails', 'individualizados to enviados', origem.replace(robo_path, '').replace("\\?\\", "").replace("\\\\", "\\"), destino.replace(robo_path, '').replace("\\?\\", "").replace("\\\\", "\\")]
                     uploadingReport(action_list, reportdafaseatual)
                     pdfs_enviados_list.append(assunto_email)
                     print(n, 'Processado item: ', id, 'serie: ', serie)
                     n += 1
                 except:
-                    action_list = [id, serie, datetime.now(), 'robodosemails', 'ERROR: individualizados to enviados', origem.replace(robo_path, ''), destino.replace(robo_path, '')]
+                    action_list = [id, serie, datetime.now(), 'robodosemails', 'ERROR: individualizados to enviados', origem.replace(robo_path, '').replace("\\?\\", "").replace("\\\\", "\\"), destino.replace(robo_path, '').replace("\\?\\", "").replace("\\\\", "\\")]
                     uploadingReportError(action_list, reportdosrobos_erros)
-                    print('ERROR: Report de erro dos robos atualizado com sucesso: ', str(id) + "|" + str(serie), "diretorio: ", origem.replace(robo_path, ''))
+                    print('ERROR: Report de erro dos robos atualizado com sucesso: ', str(id) + "|" + str(serie), "diretorio: ", origem.replace(robo_path, '').replace("\\?\\", "").replace("\\\\", "\\"))
                     e += 1
     enviar_email_novos_arquivos(pdfs_enviados_list)
 else:

@@ -120,14 +120,14 @@ if len(arquivosparaprocessarnafaseatual_list) > 0:
     for id, origem, destino in arquivosparaprocessarnafaseatual_list:
         try:
             processamento(origem, destino, 'tentativa01')  # copiando arquivos (arquivosparaprocessarnafaseatual) da central dos robos para a temp_original (path_destino_atual)
-            action_list = [id, "", datetime.now(), 'robodospdfs', 'centraldenotas to temp_original', origem.replace(robo_path, ''), destino.replace(robo_path, '')]
+            action_list = [id, "", datetime.now(), 'robodospdfs', 'centraldenotas to temp_original', origem.replace(robo_path, '').replace("\\?\\", "").replace("\\\\", "\\"), destino.replace(robo_path, '').replace("\\?\\", "").replace("\\\\", "\\")]
             uploadingReport(action_list, reportdafaseatual)
             print(n, 'Processado item: ', id, 'serie: ', '')
             n += 1
         except:
             try:  # TENTANDO NOVAMENTE, MAS COM REDUCAO DO NOME DO DIRETORIO
                 processamento("\\\\?\\" + origem, "\\\\?\\" + destino, 'tentativa02')
-                action_list = [id, "",  datetime.now(), 'robodospdfs', 'centraldenotas to temp_original', origem.replace(robo_path, ''), destino.replace(robo_path, '')]
+                action_list = [id, "",  datetime.now(), 'robodospdfs', 'centraldenotas to temp_original', origem.replace(robo_path, '').replace("\\?\\", "").replace("\\\\", "\\"), destino.replace(robo_path, '').replace("\\?\\", "").replace("\\\\", "\\")]
                 uploadingReport(action_list, reportdafaseatual)
                 print(n, 'Processado item: ', id, 'serie: ', '')
                 n += 1
@@ -143,7 +143,7 @@ if len(arquivosparaprocessarnafaseatual_list) > 0:
 
                     processamento("\\\\?\\" + origem_curto, "\\\\?\\" + destino_curto, 'tentativa03')
 
-                    action_list = [id, "", datetime.now(), 'robodospdfs', 'centraldenotas to temp_original', origem.replace(robo_path, ''), destino.replace(robo_path, '')]
+                    action_list = [id, "", datetime.now(), 'robodospdfs', 'centraldenotas to temp_original', origem.replace(robo_path, '').replace("\\?\\", "").replace("\\\\", "\\"), destino.replace(robo_path, '').replace("\\?\\", "").replace("\\\\", "\\")]
                     uploadingReport(action_list, reportdafaseatual)
                     print(n, 'Processado item: ', id, 'serie: ', '')
                     n += 1
@@ -159,14 +159,14 @@ if len(arquivosparaprocessarnafaseatual_list) > 0:
                               "{filename}".format(filename=filename),
                               "/z"])
 
-                        action_list = [id, "", datetime.now(), 'robodospdfs', 'centraldenotas to temp_original', origem.replace(robo_path, ''), destino.replace(robo_path, '')]
+                        action_list = [id, "", datetime.now(), 'robodospdfs', 'centraldenotas to temp_original', origem.replace(robo_path, '').replace("\\?\\", "").replace("\\\\", "\\"), destino.replace(robo_path, '').replace("\\?\\", "").replace("\\\\", "\\")]
                         uploadingReport(action_list, reportdafaseatual)
                         print(n, 'Processado id: ', id, 'serie: ', '')
                         n += 1
                     except:
-                        action_list = [id, "", datetime.now(), 'robodospdfs', 'ERROR: centraldenotas to temp_original', origem.replace(robo_path, ''), destino.replace(robo_path, '')]
+                        action_list = [id, "", datetime.now(), 'robodospdfs', 'ERROR: centraldenotas to temp_original', origem.replace(robo_path, '').replace("\\?\\", "").replace("\\\\", "\\"), destino.replace(robo_path, '').replace("\\?\\", "").replace("\\\\", "\\")]
                         uploadingReportError(action_list, reportdosrobos_erros)
-                        print('ERROR: Report de erro dos robos atualizado com sucesso: ',  id, "diretorio: ", origem.replace(robo_path, ''))
+                        print('ERROR: Report de erro dos robos atualizado com sucesso: ',  id, "diretorio: ", origem.replace(robo_path, '').replace("\\?\\", "").replace("\\\\", "\\"))
                         e += 1
 else:
     print('Não há arquivos novos a serem copiados')
