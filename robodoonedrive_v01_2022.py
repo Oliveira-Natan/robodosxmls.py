@@ -10,6 +10,29 @@ import getpass
 
 start = datetime.now()
 
+def report_backup(onedrive_path, reportdosrobos_erros, report_robodoonedrive, report_robodospdfs, report_robodeindividualizacao, report_robodosemailsparaarquivei):
+    report_backup_directory = r'{}\Retencao_Gerencial\robosdoretencao_backup'.format(onedrive_path) + '\\backup_'
+    now = datetime.now()
+    hora = datetime.now().hour
+    if (hora <= 12):
+        momento = 'manha'
+    elif (hora > 12) and (hora <= 18):
+        momento = 'tarde'
+    elif (hora > 18):
+        momento = 'noite'
+
+    directory = report_backup_directory + str(now.strftime("%d-%m-%Y_")) + momento
+    print(directory)
+    try:
+        os.mkdir(directory)
+        shutil.copyfile(reportdosrobos_erros, directory + '\\' + 'errosdosrobos.csv')
+        shutil.copyfile(report_robodoonedrive, directory + '\\' + 'robodoonedrive.csv')
+        shutil.copyfile(report_robodospdfs, directory + '\\' + 'robodospdfs.csv')
+        shutil.copyfile(report_robodeindividualizacao, directory + '\\' + 'robodeindividualizacao.csv')
+        shutil.copyfile(report_robodosemailsparaarquivei, directory + '\\' + 'robodosemails.csv')
+    except:
+        print('Diretorio de backup já existente')
+
 def listardiretorios(path):
     listadediretorios = []
     print('Iniciando listagem de diretorios')
@@ -35,7 +58,7 @@ def criardiretorios(path_destino_atual, diretoriosparacriar_list):
     for diretoriosparacriar in diretoriosparacriar_list:
         nome_do_novo_diretorio = path_destino_atual + "\\" + diretoriosparacriar
         os.makedirs(nome_do_novo_diretorio)
-        print('Criado o diretorio: ', nome_do_novo_diretorio)
+        print('Criado backup dos relatorios: ', nome_do_novo_diretorio)
 
 def listararquivosnaspastas(path):
     print('Iniciando listagem de arquivos arquivosnacentraldoOneDrive')
@@ -103,6 +126,8 @@ path_origem_atual = onedrive_path
 path_destino_atual = centraldosrobos_path
 reportdafaseatual = report_robodoonedrive
 reportdafaseanterior = None
+
+report_backup(onedrive_path, reportdosrobos_erros, report_robodoonedrive, report_robodospdfs, report_robodeindividualizacao, report_robodosemailsparaarquivei)
 
 start = datetime.now()
 ## TRATAMENTO DE FOLDERS

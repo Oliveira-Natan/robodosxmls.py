@@ -1,6 +1,49 @@
 import getpass
-user = getpass.getuser()
-print(user)
+from datetime import datetime
+import os
+import shutil
+
+def report_backup(onedrive_path, reportdosrobos_erros, report_robodoonedrive, report_robodospdfs, report_robodeindividualizacao, report_robodosemailsparaarquivei):
+    report_backup_directory = r'{}\Retencao_Gerencial\robosdoretencao_backup'.format(onedrive_path) + '\\backup_'
+    now = datetime.now()
+    hora = datetime.now().hour
+    if (hora <= 12):
+        momento = 'manha'
+    elif (hora > 12) and (hora <= 18):
+        momento = 'tarde'
+    elif (hora > 18):
+        momento = 'noite'
+
+    directory = report_backup_directory + str(now.strftime("%d-%m-%Y_")) + momento
+    print(directory)
+    try:
+        os.mkdir(directory)
+        shutil.copyfile(reportdosrobos_erros, directory + '\\' + 'errosdosrobos.csv')
+        shutil.copyfile(report_robodoonedrive, directory + '\\' + 'robodoonedrive.csv')
+        shutil.copyfile(report_robodospdfs, directory + '\\' + 'robodospdfs.csv')
+        shutil.copyfile(report_robodeindividualizacao, directory + '\\' + 'robodeindividualizacao.csv')
+        shutil.copyfile(report_robodosemailsparaarquivei, directory + '\\' + 'robodosemails.csv')
+    except:
+        print('Diretorio de backup já existente')
+
+
+# path and reports names
+username = getpass.getuser()
+onedrive_path = r'C:\Users\{}\OneDrive - MCS MARKUP AUDITORIA E CONSULTORIA EMPRESARIAL LTDA\CentraldeNotas'.format(username)
+robo_path = r'C:\Users\{}\Desktop\rede\robodepdfs'.format(username)
+
+reportdosrobos_erros = r'{}\reports\errosdosrobos.csv'.format(robo_path)
+report_robodoonedrive = r'{}\reports\robodoonedrive.csv'.format(robo_path)
+report_robodospdfs = r'{}\reports\robodospdfs.csv'.format(robo_path)
+report_robodeindividualizacao = r'{}\reports\robodeindividualizacao.csv'.format(robo_path)
+report_robodosemailsparaarquivei = r'{}\reports\robodosemails.csv'.format(robo_path)
+
+
+report_backup(onedrive_path, reportdosrobos_erros, report_robodoonedrive, report_robodospdfs, report_robodeindividualizacao, report_robodosemailsparaarquivei)
+
+# import getpass
+# user = getpass.getuser()
+# print(user)
 
 # def processamento(origem, destino, path_destino_atual, tentativa):
 #     print('iniciando ', tentativa)

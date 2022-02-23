@@ -97,12 +97,12 @@ def enviar_email(origem, destino, path_destino_atual, id, serie, tentativa):
     email["To"] = EMAIL_DESTINATARIO
     email["Subject"] = assunto_email
 
-    # # Log in to server using secure context and send email
-    # context = ssl.create_default_context()
-    # with SMTP("smtp.office365.com", 587) as server:
-    #     server.starttls(context=context)
-    #     server.login(EMAIL_REMETENTE, SENHA_REMETENTE)
-    #     server.sendmail(EMAIL_REMETENTE, EMAIL_DESTINATARIO, email.as_string())
+    # Log in to server using secure context and send email
+    context = ssl.create_default_context()
+    with SMTP("smtp.office365.com", 587) as server:
+        server.starttls(context=context)
+        server.login(EMAIL_REMETENTE, SENHA_REMETENTE)
+        server.sendmail(EMAIL_REMETENTE, EMAIL_DESTINATARIO, email.as_string())
     print(f"enviado por email: {assunto_email}")
     return assunto_email
 
