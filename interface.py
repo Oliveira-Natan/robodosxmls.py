@@ -5,6 +5,7 @@ from robodoonedriver_v01_2022 import robodoonedriver
 from robodospdfs_v01_2022 import robodospdfs
 from robodeindividualizacao_v01_2022 import robodeindividualizacao
 from robodosemailsparaarquivei_v01_2022 import robodosemailsparaarquivei
+from robodosxmls import robodosxmls
 
 'pyi-makespec interface.py --onefile --icon=logo.ico --name mcstoolsdesktop_retidos'
 'pyinstaller --clean mcstoolsdesktop_retidos.spec'
@@ -21,6 +22,7 @@ if consulta_de_versao == 'versao_atualizada':
               [sg.Button('Robo dos PDFs', size=(25, 1))],
               [sg.Button('Robo de Individualização', size=(25, 1))],
               [sg.Button('Robo de emails pra Arquivei', size=(25, 1))],
+              [sg.Button('Robo dos XMLs do Arquivei', size=(25, 1))],
               ]
     win1 = sg.Window('MCS Tools Desktop: Retidos', layout)
 
@@ -36,6 +38,8 @@ if consulta_de_versao == 'versao_atualizada':
             robodeindividualizacao()
         elif event == 'Robo de emails pra Arquivei':
             robodosemailsparaarquivei()
+        elif event == 'Robo dos XMLs do Arquivei':
+            robodosxmls()
 
         if event == sg.WIN_CLOSED:
             break
