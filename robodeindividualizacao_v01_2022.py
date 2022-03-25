@@ -65,6 +65,7 @@ def robodeindividualizacao():
         path_files_to_copy = []
         for id, item in arquivosprocessadosnafaseanterior_list:
             if item not in arquivosjaprocessadosnafaseatual_list:
+                print(id, item)
                 path_files_to_copy.append([id, item, item.replace('temp_original', 'temp_individualizados')])  # id, origem, destino
         print('total de listaarquivosparaprocessarnafaseatual: ', len(path_files_to_copy))
         return path_files_to_copy
@@ -154,7 +155,7 @@ def robodeindividualizacao():
         action_list = pd.Series(action_list, index=robo_data.columns)  # convertendo lista de acao em serie
         robo_data = robo_data.append(action_list, ignore_index=True)  # appending serie no report
         robo_data.to_csv(reportdafaseatual, index=False)  # salvando report
-        time.sleep(1)
+        time.sleep(2)
 
 
     def uploadingReportError(action_list, reportdosrobos_erros):
@@ -162,7 +163,7 @@ def robodeindividualizacao():
         action_list = pd.Series(action_list, index=robo_data_error.columns)  # convertendo lista de acao em serie
         robo_data_error = robo_data_error.append(action_list, ignore_index=True)  # appending serie no report
         robo_data_error.to_csv(reportdosrobos_erros, index=False)  # salvando report
-
+        time.sleep(2)
 
     # path and reports names
     username = getpass.getuser()

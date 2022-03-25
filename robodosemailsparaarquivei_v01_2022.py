@@ -149,13 +149,14 @@ def robodosemailsparaarquivei():
         action_list = pd.Series(action_list, index=robo_data.columns)  # convertendo lista de acao em serie
         robo_data = robo_data.append(action_list, ignore_index=True)  # appending serie no report
         robo_data.to_csv(reportdafaseatual, index=False)  # salvando report
+        time.sleep(2)
 
     def uploadingReportError(action_list, reportdosrobos_erros):
         robo_data_error = pd.read_csv(reportdosrobos_erros)
         action_list = pd.Series(action_list, index=robo_data_error.columns)  # convertendo lista de acao em serie
         robo_data_error = robo_data_error.append(action_list, ignore_index=True)  # appending serie no report
         robo_data_error.to_csv(reportdosrobos_erros, index=False)  # salvando report
-        time.sleep(1)
+        time.sleep(2)
 
     # path and reports names
     username = getpass.getuser()
