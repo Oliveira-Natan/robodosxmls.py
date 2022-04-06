@@ -22,6 +22,7 @@ import xml.etree.ElementTree as ET
 import csv
 import os
 import time
+from decouple import config
 
 
 def test():
@@ -457,9 +458,8 @@ from zoneinfo import ZoneInfo
 
 
 class Processing():
-    cluster = MongoClient(
-        "mongodb+srv://mcsdeclaraki:markup01@cluster0.vb8dc.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
-    database = cluster["myFirstDatabase"]
+    cluster = MongoClient(config("DB_URL"))
+    database = cluster[config("DB_NAME")]
     collection = database["db_ArquiveiRetencao"]
 
     def ProcessingNFe():
